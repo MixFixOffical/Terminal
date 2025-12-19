@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - Пользователь</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(to right, #00b09b, #96c93d); color: white; padding: 25px; text-align: center; }
+        .back-btn { position: absolute; left: 20px; top: 25px; color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; background: rgba(255,255,255,0.2); }
+        .welcome { padding: 30px; text-align: center; border-bottom: 1px solid #eee; }
+        .time-display { font-size: 1.2rem; color: #666; margin-top: 10px; }
+        .balance-card { background: linear-gradient(to right, #4a00e0, #8e2de2); color: white; margin: 30px; padding: 25px; border-radius: 15px; text-align: center; }
+        .balance-amount { font-size: 3rem; font-weight: bold; margin: 10px 0; }
+        .actions { padding: 0 30px 30px; }
+        .section-title { color: #333; margin-bottom: 20px; font-size: 1.5rem; }
+        .pin-section, .admin-actions { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+        .pin-input { font-size: 2rem; letter-spacing: 10px; text-align: center; width: 200px; padding: 10px; margin: 10px auto; display: block; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin: 5px; }
+        .btn-primary { background: #00b09b; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .transaction-list { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        .transaction-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .deposit { color: #00b09b; }
+        .withdrawal { color: #ff416c; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Назад</a>
+            <h1>Личный кабинет пользователя</h1>
+        </div>
+        
+        <div class="welcome">
+            <h2 id="welcome-message">Добро пожаловать!</h2>
+            <div class="time-display" id="current-time"></div>
+        </div>
+        
+        <div class="balance-card">
+            <h3>Ваш баланс</h3>
+            <div class="balance-amount" id="balance">0 ₽</div>
+            <p>Последнее обновление: <span id="last-update">-</span></p>
+        </div>
+        
+        <div class="actions">
+            <!-- Раздел PIN-кода -->
+            <div class="pin-section" id="pin-section">
+                <h3 class="section-title">PIN-код</h3>
+                <div id="pin-form">
+                    <input type="text" id="pin-input" class="pin-input" maxlength="4" placeholder="0000" inputmode="numeric">
+                    <button class="btn btn-primary" id="save-pin-btn">Сохранить PIN</button>
+                    <p style="color: #666; margin-top: 10px; font-size: 0.9rem;">Создайте 4-значный PIN-код для безопасности</p>
+                </div>
+                <div id="pin-verified" class="hidden">
+                    <p style="color: #00b09b; font-weight: bold;">✓ PIN-код установлен</p>
+                    <button class="btn btn-secondary" id="change-pin-btn">Изменить PIN</button>
+                </div>
+            </div>
+            
+            <!-- Действия администратора -->
+            <div class="admin-actions">
+                <h3 class="section-title">Действия администратора</h3>
+                <div id="admin-actions-list">
+                    <p>Ожидание действий администратора...</p>
+                </div>
+            </div>
+            
+            <!-- История транзакций -->
+            <div class="transaction-history">
+                <h3 class="section-title">История транзакций</h3>
+                <div class="transaction-list" id="transaction-list">
+                    <!-- Транзакции будут загружены здесь -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwxW6rG5Rc2mdMCZ3555j_oMSK1oS2g-s",
+            authDomain: "mixfixbank1.firebaseapp.com",
+            projectId: "mixfixbank1",
+            storageBucket: "mixfixbank1.firebasestorage.app",
+            messagingSenderId: "82594956649",
+            appId: "1:82594956649:web:bbd6d3b000c1f9001069f8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+
+        // Обновление времени
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ru-RU');
+            const dateString = now.toLocaleDateString('ru-RU', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('current-time').textContent = `${dateString} ${timeString}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Проверка аутентификации
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            currentUser = user;
+            document.getElementById('welcome-message').textContent = `Добро пожаловать, ${user.email}!`;
+            
+            // Загружаем данные пользователя
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                userData = userDoc.data();
+                
+                // Обновляем баланс
+                document.getElementById('balance').textContent = `${userData.balance || 0} ₽`;
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ru-RU');
+                
+                // Проверяем PIN-код
+                if (userData.pinCode) {
+                    document.getElementById('pin-form').classList.add('hidden');
+                    document.getElementById('pin-verified').classList.remove('hidden');
+                } else {
+                    document.getElementById('pin-form').classList.remove('hidden');
+                    document.getElementById('pin-verified').classList.add('hidden');
+                }
+                
+                // Загружаем транзакции
+                loadTransactions(user.uid);
+                
+                // Слушаем изменения баланса в реальном времени
+                const userRef = doc(db, "users", user.uid);
+                onSnapshot(userRef, (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        document.getElementById('balance').textContent = `${data.balance || 0} ₽`;
+                        document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ru-RU');
+                    }
+                });
+                
+                // Слушаем действия администратора
+                listenForAdminActions(user.uid);
+                
+            } else {
+                alert('Данные пользователя не найдены');
+                await signOut(auth);
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Сохранение PIN-кода
+        document.getElementById('save-pin-btn').addEventListener('click', async () => {
+            const pin = document.getElementById('pin-input').value;
+            
+            if (pin.length !== 4 || !/^\d+$/.test(pin)) {
+                alert('Введите 4 цифры для PIN-кода');
+                return;
+            }
+            
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    pinCode: pin
+                });
+                
+                document.getElementById('pin-form').classList.add('hidden');
+                document.getElementById('pin-verified').classList.remove('hidden');
+                alert('PIN-код успешно сохранен!');
+            } catch (error) {
+                alert('Ошибка сохранения PIN-кода: ' + error.message);
+            }
+        });
+
+        // Изменение PIN-кода
+        document.getElementById('change-pin-btn').addEventListener('click', () => {
+            document.getElementById('pin-form').classList.remove('hidden');
+            document.getElementById('pin-verified').classList.add('hidden');
+            document.getElementById('pin-input').value = '';
+        });
+
+        // Загрузка транзакций
+        async function loadTransactions(userId) {
+            const transactionsRef = collection(db, "transactions");
+            const q = query(transactionsRef, where("userId", "==", userId));
+            
+            const querySnapshot = await getDocs(q);
+            const transactionList = document.getElementById('transaction-list');
+            transactionList.innerHTML = '';
+            
+            if (querySnapshot.empty) {
+                transactionList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Нет транзакций</p>';
+                return;
+            }
+            
+            querySnapshot.forEach((doc) => {
+                const transaction = doc.data();
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                
+                const typeClass = transaction.type === 'deposit' ? 'deposit' : 'withdrawal';
+                const typeSymbol = transaction.type === 'deposit' ? '+' : '-';
+                
+                item.innerHTML = `
+                    <div>
+                        <strong>${transaction.description || transaction.type}</strong>
+                        <div style="font-size: 0.9rem; color: #666;">${new Date(transaction.timestamp).toLocaleString('ru-RU')}</div>
+                    </div>
+                    <div class="${typeClass}" style="font-weight: bold; font-size: 1.2rem;">
+                        ${typeSymbol}${transaction.amount} ₽
+                    </div>
+                `;
+                
+                transactionList.prepend(item);
+            });
+        }
+
+        // Слушаем действия администратора
+        function listenForAdminActions(userId) {
+            const actionsRef = collection(db, "admin_actions");
+            const q = query(actionsRef, where("targetUserId", "==", userId));
+            
+            onSnapshot(q, (snapshot) => {
+                const actionsList = document.getElementById('admin-actions-list');
+                actionsList.innerHTML = '';
+                
+                snapshot.forEach((doc) => {
+                    const action = doc.data();
+                    if (!action.completed) {
+                        const actionDiv = document.createElement('div');
+                        actionDiv.className = 'transaction-item';
+                        actionDiv.innerHTML = `
+                            <div>
+                                <strong>Действие администратора</strong>
+                                <div>Тип: ${getActionType(action.type)}</div>
+                                <div>Сумма: ${action.amount} ₽</div>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" onclick="processAdminAction('${doc.id}', 'approve')">Подтвердить</button>
+                                <button class="btn btn-secondary" onclick="processAdminAction('${doc.id}', 'reject')">Отклонить</button>
+                            </div>
+                        `;
+                        actionsList.appendChild(actionDiv);
+                    }
+                });
+                
+                if (snapshot.empty) {
+                    actionsList.innerHTML = '<p style="color: #666; text-align: center;">Нет ожидающих действий администратора</p>';
+                }
+            });
+        }
+
+        // Глобальная функция для обработки действий администратора
+        window.processAdminAction = async (actionId, response) => {
+            const pin = prompt('Введите ваш PIN-код для подтверждения:');
+            if (!pin) return;
+            
+            try {
+                // Проверяем PIN-код
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (!userDoc.exists() || userDoc.data().pinCode !== pin) {
+                    alert('Неверный PIN-код');
+                    return;
+                }
+                
+                // Получаем данные действия
+                const actionDoc = await getDoc(doc(db, "admin_actions", actionId));
+                const action = actionDoc.data();
+                
+                if (response === 'approve') {
+                    // Обновляем баланс
+                    const userRef = doc(db, "users", currentUser.uid);
+                    const userDocSnap = await getDoc(userRef);
+                    const currentBalance = userDocSnap.data().balance || 0;
+                    
+                    let newBalance = currentBalance;
+                    if (action.type === 'deposit') {
+                        newBalance += Number(action.amount);
+                    } else if (action.type === 'withdrawal') {
+                        newBalance -= Number(action.amount);
+                    }
+                    
+                    // Обновляем баланс
+                    await updateDoc(userRef, {
+                        balance: newBalance
+                    });
+                    
+                    // Добавляем транзакцию
+                    await addTransaction({
+                        userId: currentUser.uid,
+                        type: action.type,
+                        amount: action.amount,
+                        description: `Администратор: ${action.type === 'deposit' ? 'Пополнение' : 'Списание'}`,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                // Помечаем действие как завершенное
+                await updateDoc(doc(db, "admin_actions", actionId), {
+                    completed: true,
+                    userResponse: response,
+                    respondedAt: new Date().toISOString()
+                });
+                
+                alert(`Действие ${response === 'approve' ? 'подтверждено' : 'отклонено'}!`);
+                
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        };
+
+        function getActionType(type) {
+            const types = {
+                'deposit': 'Пополнение счета',
+                'withdrawal': 'Списание со счета',
+                'check': 'Проверка счета'
+            };
+            return types[type] || type;
+        }
+
+        async function addTransaction(transactionData) {
+            await setDoc(doc(collection(db, "transactions")), transactionData);
+        }
+    </script>
+</body>
+</html>
