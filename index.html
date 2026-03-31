@@ -33,26 +33,70 @@ h1 {
 
 .subtitle {
   color: #6e6e73;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .status {
   display: inline-block;
-  padding: 8px 14px;
+  padding: 10px 16px;
   border-radius: 20px;
-  background: #fff4e5;
-  color: #ff9f0a;
-  font-weight: 500;
-  margin-bottom: 20px;
+  background: #e6f4ea;
+  color: #34c759;
+  font-weight: 600;
+  margin-bottom: 25px;
 }
 
-.section {
-  margin-top: 20px;
+/* ПРОГРЕСС */
+.progress-container {
+  position: relative;
+  margin: 30px 0;
+}
+
+.progress-line {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #e5e5e5;
+}
+
+.progress-fill {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  height: 3px;
+  width: 66%;
+  background: #34c759;
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+.step {
+  text-align: center;
+  width: 25%;
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e5e5e5;
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: white;
 }
 
 .label {
-  color: #6e6e73;
   font-size: 13px;
+  color: #6e6e73;
 }
 
 .value {
@@ -60,10 +104,65 @@ h1 {
   margin-bottom: 10px;
 }
 
+/* состояния */
+.done .circle {
+  background: #34c759;
+}
+
+.current .circle {
+  background: #ff9f0a;
+  animation: pulse 1s infinite;
+}
+
+.error .circle {
+  background: #ff3b30;
+}
+
+.done .label {
+  color: #34c759;
+}
+
+.current .label {
+  color: #ff9f0a;
+}
+
+.error .label {
+  color: #ff3b30;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+/* инфо */
+.device-info {
+  margin-top: 25px;
+}
+
+.info-block {
+  margin-bottom: 10px;
+}
+
 .divider {
   height: 1px;
   background: #e5e5e5;
   margin: 15px 0;
+}
+
+/* печать */
+.stamp {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 18px;
+  color: #34c759;
+  border: 2px dashed #34c759;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  transform: rotate(-5deg);
+  display: inline-block;
 }
 
 .footer {
@@ -81,53 +180,81 @@ h1 {
   <div class="card">
     
     <h1>Статус заказа</h1>
-    <div class="subtitle">Заявка принята и ожидает оплаты</div>
+    <div class="subtitle">Оплата получена, начинаем работу</div>
 
-    <div class="status">⏳ Ожидает оплаты</div>
+    <div class="status">✅ Оплата получена</div>
 
-    <div class="section">
-      <div class="label">Номер заказа</div>
-      <div class="value">20260328-8427</div>
+    <!-- ПРОГРЕСС -->
+    <div class="progress-container">
+      <div class="progress-line"></div>
+      <div class="progress-fill"></div>
 
-      <div class="label">Дата</div>
-      <div class="value">28 марта 2026</div>
+      <div class="steps">
+        <div class="step done">
+          <div class="circle">✔</div>
+          <div class="label">Обработка</div>
+        </div>
+
+        <div class="step done">
+          <div class="circle">✔</div>
+          <div class="label">Оплата</div>
+        </div>
+
+        <div class="step current">
+          <div class="circle">…</div>
+          <div class="label">Работа</div>
+        </div>
+
+        <div class="step error">
+          <div class="circle">✖</div>
+          <div class="label">Завершено</div>
+        </div>
+      </div>
     </div>
 
-    <div class="divider"></div>
+    <!-- ИНФОРМАЦИЯ -->
+    <div class="device-info">
 
-    <div class="section">
-      <div class="label">Модель</div>
-      <div class="value">iPhone 14 Plus 128GB Blue</div>
+      <div class="info-block">
+        <div class="label">Номер заказа</div>
+        <div class="value">20260328-8427</div>
 
-      <div class="label">IMEI</div>
-      <div class="value">356601712088835</div>
+        <div class="label">Дата</div>
+        <div class="value">28 марта 2026</div>
+      </div>
 
-      <div class="label">Серийный номер</div>
-      <div class="value">PWFFP74LHJ</div>
+      <div class="divider"></div>
+
+      <div class="info-block">
+        <div class="label">Модель</div>
+        <div class="value">iPhone 14 Plus 128GB Blue</div>
+
+        <div class="label">IMEI</div>
+        <div class="value">356601712088835</div>
+
+        <div class="label">Серийный номер</div>
+        <div class="value">PWFFP74LHJ</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="info-block">
+        <div class="label">iCloud статус</div>
+        <div class="value" style="color:#ff3b30;">Lost Mode</div>
+
+        <div class="label">Find My iPhone</div>
+        <div class="value">Включен</div>
+
+        <div class="label">SIM-Lock</div>
+        <div class="value" style="color:#34c759;">Разблокирован</div>
+      </div>
+
     </div>
 
-    <div class="divider"></div>
-
-    <div class="section">
-      <div class="label">iCloud статус</div>
-      <div class="value">Lost Mode</div>
-
-      <div class="label">Find My iPhone</div>
-      <div class="value">Включен</div>
-
-      <div class="label">SIM-Lock</div>
-      <div class="value">Разблокирован</div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section">
-      <div class="label">Время обработки</div>
-      <div class="value">24–72 часа после оплаты</div>
-    </div>
+    <div class="stamp">✔ ОПЛАЧЕНО</div>
 
     <div class="footer">
-      Если у вас есть вопросы, обратитесь в поддержку
+      Ваш заказ обрабатывается. Пожалуйста, ожидайте.
     </div>
 
   </div>
