@@ -29,12 +29,6 @@
             width: 100%;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         h1 {
@@ -73,7 +67,7 @@
             background: white;
         }
 
-        select:focus, input:focus {
+        select:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
@@ -106,18 +100,12 @@
             margin-top: 25px;
             padding: 20px;
             border-radius: 20px;
-            animation: slideUp 0.4s ease;
+            animation: fadeIn 0.4s ease;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .result-success {
@@ -165,6 +153,17 @@
             opacity: 0.9;
         }
 
+        .info-box {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 16px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #475569;
+            text-align: left;
+            border-left: 4px solid #667eea;
+        }
+
         .loading-spinner {
             display: inline-block;
             width: 18px;
@@ -179,31 +178,6 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-
-        .info-box {
-            background: #f8fafc;
-            padding: 14px;
-            border-radius: 16px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #475569;
-            text-align: left;
-            border-left: 4px solid #667eea;
-        }
-
-        .footer-note {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #94a3b8;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-            }
-            h1 { font-size: 24px; }
-            .student-name { font-size: 18px; }
         }
     </style>
 </head>
@@ -222,7 +196,7 @@
 
     <div class="form-group">
         <label>🕐 Текущее время</label>
-        <input type="text" id="currentTime" readonly style="background: #f1f5f9; font-family: monospace; font-size: 15px;">
+        <input type="text" id="currentTime" readonly style="background: #f1f5f9; font-family: monospace;">
     </div>
 
     <button id="markBtn">📝 Отметиться</button>
@@ -235,180 +209,177 @@
         • Опоздание — после 8:30<br>
         • Отметиться можно только 1 раз в день
     </div>
-    <div class="footer-note">
-        ⚡ Если вас нет в списке — обратитесь к преподавателю
-    </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-    
-    // Конфиг Firebase (твой)
-    const firebaseConfig = {
-        apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
-        authDomain: "agroprombank-637a2.firebaseapp.com",
-        projectId: "agroprombank-637a2",
-        storageBucket: "agroprombank-637a2.firebasestorage.app",
-        messagingSenderId: "16228435746",
-        appId: "1:16228435746:web:d08e247e5fa9c7b418077b",
-        measurementId: "G-PC20WNQK9C"
-    };
-    
-    // Инициализация
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    
-    let students = [];
-    let markedToday = false;
-    
-    // Текущая дата
-    const todayDate = new Date().toISOString().split('T')[0];
-    
-    // Обновление времени
-    function updateTime() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        document.getElementById('currentTime').value = `${hours}:${minutes}:${seconds}`;
-    }
-    updateTime();
-    setInterval(updateTime, 1000);
-    
-    // Загрузка списка студентов
-    async function loadStudents() {
-        const select = document.getElementById('studentSelect');
-        try {
-            const querySnapshot = await getDocs(collection(db, "students"));
-            students = [];
-            querySnapshot.forEach(doc => {
-                students.push({ id: doc.id, ...doc.data() });
-            });
-            students.sort((a, b) => a.lastName.localeCompare(b.lastName));
+<script>
+    // Импорт Firebase (без type="module")
+    (async function() {
+        // Динамический импорт Firebase
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
+        const { getFirestore, collection, getDocs, doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
+        
+        // Конфиг Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+            authDomain: "agroprombank-637a2.firebaseapp.com",
+            projectId: "agroprombank-637a2",
+            storageBucket: "agroprombank-637a2.firebasestorage.app",
+            messagingSenderId: "16228435746",
+            appId: "1:16228435746:web:d08e247e5fa9c7b418077b",
+            measurementId: "G-PC20WNQK9C"
+        };
+        
+        // Инициализация
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        let students = [];
+        const todayDate = new Date().toISOString().split('T')[0];
+        
+        // Обновление времени
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU');
+            document.getElementById('currentTime').value = timeStr;
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Загрузка студентов
+        async function loadStudents() {
+            const select = document.getElementById('studentSelect');
+            try {
+                const querySnapshot = await getDocs(collection(db, "students"));
+                students = [];
+                querySnapshot.forEach(doc => {
+                    students.push({ id: doc.id, ...doc.data() });
+                });
+                students.sort((a, b) => a.lastName.localeCompare(b.lastName));
+                
+                if (students.length === 0) {
+                    select.innerHTML = '<option value="">-- Нет студентов, сообщите преподавателю --</option>';
+                    document.getElementById('markBtn').disabled = true;
+                } else {
+                    select.innerHTML = '<option value="">-- Выберите свои ФИО --</option>' + 
+                        students.map(s => `<option value="${s.id}">${s.lastName} ${s.firstName} (${s.group || 'Группа не указана'})</option>`).join('');
+                    document.getElementById('markBtn').disabled = false;
+                }
+            } catch (error) {
+                console.error("Ошибка загрузки:", error);
+                select.innerHTML = '<option value="">-- Ошибка загрузки, обновите страницу --</option>';
+            }
+        }
+        
+        // Проверка, отмечался ли студент сегодня
+        async function hasMarkedToday(studentId) {
+            try {
+                const attendanceRef = doc(db, "attendance", todayDate);
+                const docSnap = await getDoc(attendanceRef);
+                if (docSnap.exists()) {
+                    return docSnap.data()[studentId] !== undefined;
+                }
+                return false;
+            } catch (error) {
+                console.error("Ошибка проверки:", error);
+                return false;
+            }
+        }
+        
+        // Отметка посещаемости
+        window.markAttendance = async function() {
+            const studentId = document.getElementById('studentSelect').value;
+            const markBtn = document.getElementById('markBtn');
+            const resultDiv = document.getElementById('result');
             
-            if (students.length === 0) {
-                select.innerHTML = '<option value="">-- Нет студентов, сообщите преподавателю --</option>';
-                document.getElementById('markBtn').disabled = true;
-            } else {
-                select.innerHTML = '<option value="">-- Выберите свои ФИО --</option>' + 
-                    students.map(s => `<option value="${s.id}">${s.lastName} ${s.firstName} (${s.group || 'Группа не указана'})</option>`).join('');
-                document.getElementById('markBtn').disabled = false;
-            }
-        } catch (error) {
-            console.error("Ошибка:", error);
-            select.innerHTML = '<option value="">-- Ошибка загрузки, обновите страницу --</option>';
-        }
-    }
-    
-    // Проверка, отмечался ли студент сегодня
-    async function hasMarkedToday(studentId) {
-        try {
-            const attendanceRef = doc(db, "attendance", todayDate);
-            const docSnap = await getDoc(attendanceRef);
-            if (docSnap.exists()) {
-                return docSnap.data()[studentId] !== undefined;
-            }
-            return false;
-        } catch (error) {
-            console.error("Ошибка проверки:", error);
-            return false;
-        }
-    }
-    
-    // Отметка посещаемости
-    window.markAttendance = async function() {
-        const studentId = document.getElementById('studentSelect').value;
-        const markBtn = document.getElementById('markBtn');
-        const resultDiv = document.getElementById('result');
-        
-        if (!studentId) {
-            alert("❌ Пожалуйста, выберите свои ФИО из списка");
-            return;
-        }
-        
-        const student = students.find(s => s.id === studentId);
-        if (!student) {
-            alert("Студент не найден");
-            return;
-        }
-        
-        // Блокируем кнопку
-        markBtn.disabled = true;
-        const originalText = markBtn.innerHTML;
-        markBtn.innerHTML = '<span class="loading-spinner"></span> Отправка...';
-        
-        try {
-            // Проверка, не отмечался ли уже
-            const alreadyMarked = await hasMarkedToday(studentId);
-            if (alreadyMarked) {
-                resultDiv.innerHTML = `
-                    <div class="result-card result-warning">
-                        <div class="result-emoji">⚠️</div>
-                        <div class="student-name">${student.lastName} ${student.firstName}</div>
-                        <div class="student-group">${student.group || 'Группа не указана'}</div>
-                        <div class="status-message">Вы уже отметили посещаемость сегодня!</div>
-                        <div class="time-info">Повторная отметка невозможна</div>
-                    </div>
-                `;
-                markBtn.innerHTML = '✓ Уже отмечено';
+            if (!studentId) {
+                alert("❌ Пожалуйста, выберите свои ФИО из списка");
                 return;
             }
             
-            // Определяем статус по времени (опоздание после 8:30)
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const isLate = (hours > 8) || (hours === 8 && minutes > 30);
-            const status = isLate ? "late" : "present";
-            const statusText = isLate ? "опоздал" : "присутствует";
+            const student = students.find(s => s.id === studentId);
+            if (!student) {
+                alert("Студент не найден");
+                return;
+            }
             
-            // Сохраняем в Firebase
-            const attendanceRef = doc(db, "attendance", todayDate);
-            const currentDataSnapshot = await getDoc(attendanceRef);
-            const currentData = currentDataSnapshot.exists() ? currentDataSnapshot.data() : {};
-            currentData[studentId] = status;
-            currentData[`${studentId}_time`] = new Date().toISOString();
-            await setDoc(attendanceRef, currentData);
+            // Блокируем кнопку
+            markBtn.disabled = true;
+            const originalText = markBtn.innerHTML;
+            markBtn.innerHTML = '<span class="loading-spinner"></span> Отправка...';
             
-            // Показываем результат
-            const isOnTime = status === "present";
-            resultDiv.innerHTML = `
-                <div class="result-card ${isOnTime ? 'result-success' : 'result-warning'}">
-                    <div class="result-emoji">${isOnTime ? '🎉✅' : '⏰⚠️'}</div>
-                    <div class="student-name">${student.lastName} ${student.firstName}</div>
-                    <div class="student-group">${student.group || 'Группа не указана'}</div>
-                    <div class="status-message">
-                        ${isOnTime ? 'Поздравляем! Вы пришли вовремя!' : 'К сожалению, вы опоздали!'}
+            try {
+                // Проверка, не отмечался ли уже
+                const alreadyMarked = await hasMarkedToday(studentId);
+                if (alreadyMarked) {
+                    resultDiv.innerHTML = `
+                        <div class="result-card result-warning">
+                            <div class="result-emoji">⚠️</div>
+                            <div class="student-name">${student.lastName} ${student.firstName}</div>
+                            <div class="student-group">${student.group || 'Группа не указана'}</div>
+                            <div class="status-message">Вы уже отметили посещаемость сегодня!</div>
+                            <div class="time-info">Повторная отметка невозможна</div>
+                        </div>
+                    `;
+                    markBtn.innerHTML = '✓ Уже отмечено';
+                    return;
+                }
+                
+                // Определяем статус по времени (опоздание после 8:30)
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const isLate = (hours > 8) || (hours === 8 && minutes > 30);
+                const status = isLate ? "late" : "present";
+                
+                // Сохраняем в Firebase
+                const attendanceRef = doc(db, "attendance", todayDate);
+                const currentDataSnapshot = await getDoc(attendanceRef);
+                const currentData = currentDataSnapshot.exists() ? currentDataSnapshot.data() : {};
+                currentData[studentId] = status;
+                await setDoc(attendanceRef, currentData);
+                
+                // Показываем результат
+                const isOnTime = status === "present";
+                resultDiv.innerHTML = `
+                    <div class="result-card ${isOnTime ? 'result-success' : 'result-warning'}">
+                        <div class="result-emoji">${isOnTime ? '🎉✅' : '⏰⚠️'}</div>
+                        <div class="student-name">${student.lastName} ${student.firstName}</div>
+                        <div class="student-group">${student.group || 'Группа не указана'}</div>
+                        <div class="status-message">
+                            ${isOnTime ? 'Поздравляем! Вы пришли вовремя!' : 'К сожалению, вы опоздали!'}
+                        </div>
+                        <div class="time-info">
+                            ⌚ Время отметки: ${new Date().toLocaleTimeString('ru-RU')}<br>
+                            📌 Статус: ${status === 'present' ? 'присутствует' : 'опоздал'}<br>
+                            ${isOnTime ? '⭐ Так держать!' : '🔔 В следующий раз приходите раньше!'}
+                        </div>
                     </div>
-                    <div class="time-info">
-                        ⌚ Время отметки: ${new Date().toLocaleTimeString('ru-RU')}<br>
-                        📌 Статус: ${statusText}<br>
-                        ${isOnTime ? '⭐ Так держать!' : '🔔 В следующий раз приходите раньше!'}
+                `;
+                
+                // Блокируем выбор
+                document.getElementById('studentSelect').disabled = true;
+                markBtn.innerHTML = '✓ Отмечено успешно';
+                
+            } catch (error) {
+                console.error("Ошибка при отметке:", error);
+                resultDiv.innerHTML = `
+                    <div class="result-card result-error">
+                        <div class="result-emoji">❌</div>
+                        <div class="status-message">Ошибка при отметке</div>
+                        <div class="time-info">Попробуйте позже или обратитесь к преподавателю</div>
                     </div>
-                </div>
-            `;
-            
-            // Блокируем выбор
-            document.getElementById('studentSelect').disabled = true;
-            markBtn.innerHTML = '✓ Отмечено успешно';
-            
-        } catch (error) {
-            console.error("Ошибка при отметке:", error);
-            resultDiv.innerHTML = `
-                <div class="result-card result-error">
-                    <div class="result-emoji">❌</div>
-                    <div class="status-message">Ошибка при отметке</div>
-                    <div class="time-info">Попробуйте позже или обратитесь к преподавателю</div>
-                </div>
-            `;
-            markBtn.disabled = false;
-            markBtn.innerHTML = originalText;
-        }
-    };
-    
-    // Загрузка студентов при старте
-    loadStudents();
+                `;
+                markBtn.disabled = false;
+                markBtn.innerHTML = originalText;
+            }
+        };
+        
+        // Привязываем обработчик к кнопке
+        document.getElementById('markBtn').onclick = () => window.markAttendance();
+        
+        // Загрузка студентов при старте
+        await loadStudents();
+    })();
 </script>
 
 </body>
