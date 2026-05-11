@@ -22,53 +22,87 @@
             margin: 0 auto;
         }
 
-        .menu {
+        /* ========== ВЕРХНЕЕ МЕНЮ ========== */
+        .top-menu {
             background: white;
-            border-radius: 16px;
-            padding: 15px 25px;
+            border-radius: 20px;
+            padding: 0 25px;
             margin-bottom: 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-        }
-
-        .menu-buttons {
-            display: flex;
-            gap: 12px;
             flex-wrap: wrap;
         }
 
-        .menu button {
-            padding: 10px 20px;
-            font-size: 14px;
+        .logo {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #1e293b;
+            padding: 15px 0;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            font-size: 15px;
             font-weight: 500;
             border: none;
-            border-radius: 10px;
+            background: transparent;
             cursor: pointer;
-            background: #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+
+        .tab-btn:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .tab-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .logout-small {
+            padding: 10px 18px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
             transition: all 0.2s;
         }
 
-        .menu button:hover {
-            background: #cbd5e1;
+        .logout-small:hover {
+            background: #dc2626;
             transform: translateY(-1px);
         }
 
-        .add-student-btn {
-            background: #10b981 !important;
-            color: white;
+        /* ========== ОБЩИЕ СТИЛИ ========== */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
 
-        .add-student-btn:hover {
-            background: #059669 !important;
+        .page.active-page {
+            display: block;
         }
 
-        .logout-btn {
-            background: #ef4444 !important;
-            color: white;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .stats-grid {
@@ -120,6 +154,7 @@
         .status-buttons {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .status-btn {
@@ -219,6 +254,120 @@
             word-break: break-all;
         }
 
+        /* Стили для страницы студентов */
+        .students-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .add-student-btn {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .add-student-btn:hover {
+            background: #059669;
+        }
+
+        .search-box {
+            padding: 10px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            width: 250px;
+            font-size: 14px;
+        }
+
+        /* Стили для расписания */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .schedule-table th, .schedule-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .schedule-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .edit-schedule {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Стили для отчета */
+        .report-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .report-filters select, .report-filters input {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .export-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-table th, .report-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .report-table th {
+            background: #f1f5f9;
+        }
+
+        .present-cell {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .late-cell {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+
+        .absent-cell {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -236,11 +385,11 @@
             background: white;
             padding: 30px;
             border-radius: 20px;
-            max-width: 400px;
+            max-width: 500px;
             width: 90%;
         }
 
-        .modal-content input {
+        .modal-content input, .modal-content select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -270,86 +419,196 @@
             border-radius: 8px;
             cursor: pointer;
         }
+
+        .weekdays {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .weekday-btn {
+            padding: 8px 16px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .weekday-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .top-menu {
+                flex-direction: column;
+                padding: 10px;
+            }
+            .tab-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="menu">
-        <div class="menu-buttons">
-            <button onclick="changeDate(-1)">◀ Пред. день</button>
-            <button onclick="changeDate(1)">След. день ▶</button>
-            <button class="add-student-btn" onclick="openAddStudentModal()">➕ Добавить студента</button>
-            <button onclick="refreshData()">🔄 Обновить</button>
+    <!-- ВЕРХНЕЕ МЕНЮ -->
+    <div class="top-menu">
+        <div class="logo">📚 <span>Учет посещаемости</span></div>
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-page="home">🏠 Главная</button>
+            <button class="tab-btn" data-page="students">👨‍🎓 Студенты</button>
+            <button class="tab-btn" data-page="schedule">📅 Расписание</button>
+            <button class="tab-btn" data-page="reports">📊 Отчет</button>
         </div>
-        <button class="logout-btn" onclick="logout()">🚪 Выйти</button>
+        <button class="logout-small" onclick="logout()">🚪 Выйти</button>
     </div>
 
-    <div class="stats-grid">
-        <div class="card" style="text-align: center;">
-            <span class="date-badge" id="currentDate"></span>
-            <button onclick="goToToday()" style="margin-left: 10px; padding: 5px 10px; cursor: pointer;">Сегодня</button>
-        </div>
-
-        <div class="card qr-card">
-            <h3>📱 QR-код для всей группы</h3>
-            <p style="margin-bottom: 15px; font-size: 14px; color: #64748b;">Студенты сканируют этот QR-код для отметки</p>
-            <div id="qrCode" class="qr-code"></div>
-            <div class="qr-url" id="qrUrl"></div>
-        </div>
-    </div>
-
-    <div class="stats-grid">
-        <div class="card">
-            <h3>⏰ Опоздали</h3>
-            <ul class="student-list" id="lateList">
-                <li class="empty-message">Загрузка...</li>
-            </ul>
-        </div>
-
-        <div class="card">
-            <h3>❌ Отсутствуют</h3>
-            <ul class="student-list" id="absentList">
-                <li class="empty-message">Загрузка...</li>
-            </ul>
-        </div>
-
-        <div class="card total-stats">
-            <h3>📈 Статистика посещаемости</h3>
-            <div class="stat-numbers">
-                <div class="stat-item">
-                    <div class="stat-number" id="totalStudents">0</div>
-                    <div class="stat-label">Всего студентов</div>
+    <!-- ========== СТРАНИЦА 1: ГЛАВНАЯ ========== -->
+    <div id="homePage" class="page active-page">
+        <div class="stats-grid">
+            <div class="card" style="text-align: center;">
+                <span class="date-badge" id="currentDate"></span>
+                <button onclick="goToToday()" style="margin-left: 10px; padding: 5px 10px; cursor: pointer;">📅 Сегодня</button>
+                <div style="margin-top: 15px;">
+                    <button onclick="changeDate(-1)" style="padding: 8px 16px; margin: 0 5px;">◀ Вчера</button>
+                    <button onclick="changeDate(1)" style="padding: 8px 16px; margin: 0 5px;">Завтра ▶</button>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="presentToday">0</div>
-                    <div class="stat-label">Присутствуют</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="attendanceRate">0%</div>
-                    <div class="stat-label">Посещаемость</div>
+            </div>
+
+            <div class="card qr-card">
+                <h3>📱 QR-код для отметки</h3>
+                <p style="margin-bottom: 15px; font-size: 14px; color: #64748b;">Студенты сканируют для отметки</p>
+                <div id="qrCode" class="qr-code">Загрузка...</div>
+                <div class="qr-url" id="qrUrl"></div>
+                <button onclick="downloadQR()" style="margin-top: 15px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer;">💾 Скачать QR</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card">
+                <h3>⏰ Опоздали сегодня</h3>
+                <ul class="student-list" id="lateList">
+                    <li class="empty-message">Загрузка...</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>❌ Отсутствуют сегодня</h3>
+                <ul class="student-list" id="absentList">
+                    <li class="empty-message">Загрузка...</li>
+                </ul>
+            </div>
+
+            <div class="card total-stats">
+                <h3>📈 Статистика посещаемости</h3>
+                <div class="stat-numbers">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">Всего студентов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="presentToday">0</div>
+                        <div class="stat-label">Присутствуют</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="attendanceRate">0%</div>
+                        <div class="stat-label">Посещаемость</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <h3>📝 Список студентов и отметки</h3>
-        <div id="studentsList">
-            <div class="empty-message">Загрузка...</div>
+    <!-- ========== СТРАНИЦА 2: СТУДЕНТЫ ========== -->
+    <div id="studentsPage" class="page">
+        <div class="card">
+            <div class="students-header">
+                <h3>👨‍🎓 Список студентов</h3>
+                <div>
+                    <input type="text" id="searchStudent" class="search-box" placeholder="🔍 Поиск по ФИО...">
+                    <button class="add-student-btn" onclick="openAddStudentModal()">➕ Добавить студента</button>
+                </div>
+            </div>
+            <div id="studentsListFull">
+                <div class="empty-message">Загрузка...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== СТРАНИЦА 3: РАСПИСАНИЕ ========== -->
+    <div id="schedulePage" class="page">
+        <div class="card">
+            <h3>📅 Расписание занятий</h3>
+            <div class="weekdays" id="weekdays">
+                <button class="weekday-btn active" data-day="monday">ПН</button>
+                <button class="weekday-btn" data-day="tuesday">ВТ</button>
+                <button class="weekday-btn" data-day="wednesday">СР</button>
+                <button class="weekday-btn" data-day="thursday">ЧТ</button>
+                <button class="weekday-btn" data-day="friday">ПТ</button>
+                <button class="weekday-btn" data-day="saturday">СБ</button>
+            </div>
+            <table class="schedule-table" id="scheduleTable">
+                <thead>
+                    <tr><th>Время</th><th>Предмет</th><th>Аудитория</th><th>Действия</th></tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    <tr><td colspan="4" class="empty-message">Загрузка...</td></tr>
+                </tbody>
+            </table>
+            <button class="edit-schedule" onclick="openScheduleModal()" style="margin-top: 20px;">✏️ Редактировать расписание</button>
+        </div>
+    </div>
+
+    <!-- ========== СТРАНИЦА 4: ОТЧЕТ ========== -->
+    <div id="reportsPage" class="page">
+        <div class="card">
+            <h3>📊 Отчет по посещаемости</h3>
+            <div class="report-filters">
+                <select id="reportMonth">
+                    <option value="0">Январь</option><option value="1">Февраль</option><option value="2">Март</option>
+                    <option value="3">Апрель</option><option value="4">Май</option><option value="5">Июнь</option>
+                    <option value="6">Июль</option><option value="7">Август</option><option value="8">Сентябрь</option>
+                    <option value="9">Октябрь</option><option value="10">Ноябрь</option><option value="11">Декабрь</option>
+                </select>
+                <select id="reportYear"></select>
+                <button class="export-btn" onclick="generateReport()">📊 Сформировать</button>
+                <button class="export-btn" onclick="exportToExcel()" style="background: #3b82f6;">📎 Экспорт в Excel</button>
+            </div>
+            <div id="reportResult">
+                <div class="empty-message">Выберите месяц и нажмите "Сформировать"</div>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Модальное окно добавления студента -->
 <div id="studentModal" class="modal">
     <div class="modal-content">
-        <h3>Добавить студента</h3>
+        <h3>➕ Добавить студента</h3>
         <input type="text" id="studentLastName" placeholder="Фамилия">
         <input type="text" id="studentFirstName" placeholder="Имя">
         <input type="text" id="studentGroup" placeholder="Группа">
         <div class="modal-buttons">
             <button class="save-btn" onclick="addStudent()">Сохранить</button>
             <button class="cancel-btn" onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования расписания -->
+<div id="scheduleModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ Редактировать расписание</h3>
+        <input type="text" id="scheduleTime" placeholder="Время (например: 09:00-10:30)">
+        <input type="text" id="scheduleSubject" placeholder="Предмет">
+        <input type="text" id="scheduleRoom" placeholder="Аудитория">
+        <div class="modal-buttons">
+            <button class="save-btn" onclick="saveScheduleItem()">Сохранить</button>
+            <button class="cancel-btn" onclick="closeScheduleModal()">Отмена</button>
         </div>
     </div>
 </div>
@@ -373,10 +632,36 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
+    // Глобальные переменные
     let currentDate = new Date();
     let allStudents = [];
     let todayAttendance = {};
+    let currentScheduleDay = 'monday';
+    let scheduleData = {
+        monday: [{ time: "09:00-10:30", subject: "Математика", room: "101" }, { time: "10:45-12:15", subject: "Физика", room: "102" }],
+        tuesday: [{ time: "09:00-10:30", subject: "Программирование", room: "201" }],
+        wednesday: [{ time: "09:00-10:30", subject: "Базы данных", room: "301" }],
+        thursday: [{ time: "09:00-10:30", subject: "Веб-технологии", room: "202" }],
+        friday: [{ time: "09:00-10:30", subject: "Английский язык", room: "105" }],
+        saturday: []
+    };
     
+    // ========== НАВИГАЦИЯ ПО ВКЛАДКАМ ==========
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            btn.classList.add('active');
+            const pageId = btn.dataset.page + 'Page';
+            document.getElementById(pageId).classList.add('active-page');
+            
+            if (btn.dataset.page === 'students') renderFullStudentsList();
+            if (btn.dataset.page === 'schedule') renderSchedule();
+            if (btn.dataset.page === 'reports') loadReportYears();
+        });
+    });
+    
+    // ========== ФУНКЦИИ ДАТЫ ==========
     function formatDateForFirebase(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -391,6 +676,7 @@
         return `${day}.${month}.${year}`;
     }
     
+    // ========== ЗАГРУЗКА ДАННЫХ ==========
     async function loadStudents() {
         try {
             const querySnapshot = await getDocs(collection(db, "students"));
@@ -426,15 +712,11 @@
         try {
             const dateStr = formatDateForFirebase(date);
             const attendanceRef = doc(db, "attendance", dateStr);
-            const updateData = {
-                ...todayAttendance,
-                [studentId]: status
-            };
+            const updateData = { ...todayAttendance, [studentId]: status };
             await setDoc(attendanceRef, updateData);
             todayAttendance[studentId] = status;
-            renderStudentsList();
-            updateStats();
-            console.log(`Статус ${status} для студента ${studentId} сохранен`);
+            renderMainPage();
+            renderFullStudentsList();
         } catch (error) {
             console.error("Ошибка сохранения:", error);
             alert("Ошибка при сохранении статуса");
@@ -445,6 +727,7 @@
         saveAttendance(currentDate, studentId, status);
     };
     
+    // ========== СТУДЕНТЫ (CRUD) ==========
     window.addStudent = async function() {
         const lastName = document.getElementById('studentLastName').value.trim();
         const firstName = document.getElementById('studentFirstName').value.trim();
@@ -456,15 +739,10 @@
         }
         
         try {
-            const docRef = await addDoc(collection(db, "students"), { 
-                lastName, 
-                firstName, 
-                group,
-                createdAt: new Date().toISOString()
-            });
-            console.log("Студент добавлен с ID:", docRef.id);
+            await addDoc(collection(db, "students"), { lastName, firstName, group, createdAt: new Date().toISOString() });
             closeModal();
             await refreshData();
+            renderFullStudentsList();
             alert("Студент добавлен!");
         } catch (error) {
             console.error("Ошибка добавления студента:", error);
@@ -477,6 +755,7 @@
             try {
                 await deleteDoc(doc(db, "students", studentId));
                 await refreshData();
+                renderFullStudentsList();
                 alert("Студент удален");
             } catch (error) {
                 console.error("Ошибка удаления:", error);
@@ -489,32 +768,6 @@
         return todayAttendance[studentId] || "not_set";
     }
     
-    function renderStudentsList() {
-        const container = document.getElementById('studentsList');
-        if (allStudents.length === 0) {
-            container.innerHTML = '<div class="empty-message">Нет студентов. Добавьте первого!</div>';
-            return;
-        }
-        
-        container.innerHTML = allStudents.map(student => {
-            const status = getStudentStatus(student.id);
-            return `
-                <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <strong>${escapeHtml(student.lastName)} ${escapeHtml(student.firstName)}</strong>
-                        <span style="color: #64748b; font-size: 0.85rem; margin-left: 10px;">${escapeHtml(student.group)}</span>
-                    </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="status-btn status-present ${status === 'present' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'present')">✅ Присутствует</button>
-                        <button class="status-btn status-late ${status === 'late' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'late')">⏰ Опоздал</button>
-                        <button class="status-btn status-absent ${status === 'absent' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'absent')">❌ Отсутствует</button>
-                        <button class="status-btn" onclick="deleteStudent('${student.id}')" style="background: #ef4444; color: white;">🗑 Удалить</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-    
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -525,7 +778,7 @@
         });
     }
     
-    function updateStats() {
+    function renderMainPage() {
         const total = allStudents.length;
         let present = 0;
         let lateList = [];
@@ -551,13 +804,227 @@
         absentContainer.innerHTML = absentList.length === 0 ? '<li class="empty-message">🎉 Все присутствуют</li>' : absentList.map(name => `<li>${escapeHtml(name)} <span class="absent-badge">отсутствует</span></li>`).join('');
     }
     
+    function renderFullStudentsList() {
+        const container = document.getElementById('studentsListFull');
+        const searchTerm = document.getElementById('searchStudent')?.value.toLowerCase() || '';
+        
+        let filteredStudents = allStudents;
+        if (searchTerm) {
+            filteredStudents = allStudents.filter(s => 
+                (s.lastName + ' ' + s.firstName).toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        if (filteredStudents.length === 0) {
+            container.innerHTML = '<div class="empty-message">Нет студентов</div>';
+            return;
+        }
+        
+        container.innerHTML = filteredStudents.map(student => {
+            const status = getStudentStatus(student.id);
+            return `
+                <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <strong>${escapeHtml(student.lastName)} ${escapeHtml(student.firstName)}</strong>
+                        <span style="color: #64748b; font-size: 0.85rem; margin-left: 10px;">${escapeHtml(student.group)}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="status-btn status-present ${status === 'present' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'present')">✅ Присутствует</button>
+                        <button class="status-btn status-late ${status === 'late' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'late')">⏰ Опоздал</button>
+                        <button class="status-btn status-absent ${status === 'absent' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'absent')">❌ Отсутствует</button>
+                        <button class="status-btn" onclick="deleteStudent('${student.id}')" style="background: #ef4444; color: white;">🗑 Удалить</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    document.getElementById('searchStudent')?.addEventListener('input', () => renderFullStudentsList());
+    
+    // ========== РАСПИСАНИЕ ==========
+    function renderSchedule() {
+        const tbody = document.getElementById('scheduleBody');
+        const items = scheduleData[currentScheduleDay] || [];
+        
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-message">Нет занятий</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = items.map((item, index) => `
+            <tr>
+                <td>${escapeHtml(item.time)}</td>
+                <td>${escapeHtml(item.subject)}</td>
+                <td>${escapeHtml(item.room)}</td>
+                <td><button class="edit-schedule" onclick="deleteScheduleItem(${index})">🗑 Удалить</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    document.querySelectorAll('.weekday-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.weekday-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentScheduleDay = btn.dataset.day;
+            renderSchedule();
+        });
+    });
+    
+    window.openScheduleModal = function() {
+        document.getElementById('scheduleModal').style.display = 'flex';
+        document.getElementById('scheduleTime').value = '';
+        document.getElementById('scheduleSubject').value = '';
+        document.getElementById('scheduleRoom').value = '';
+    };
+    
+    window.saveScheduleItem = function() {
+        const time = document.getElementById('scheduleTime').value.trim();
+        const subject = document.getElementById('scheduleSubject').value.trim();
+        const room = document.getElementById('scheduleRoom').value.trim();
+        
+        if (!time || !subject) {
+            alert("Заполните время и предмет");
+            return;
+        }
+        
+        scheduleData[currentScheduleDay].push({ time, subject, room });
+        renderSchedule();
+        closeScheduleModal();
+        saveScheduleToLocal();
+    };
+    
+    window.deleteScheduleItem = function(index) {
+        scheduleData[currentScheduleDay].splice(index, 1);
+        renderSchedule();
+        saveScheduleToLocal();
+    };
+    
+    function saveScheduleToLocal() {
+        localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
+    }
+    
+    function loadScheduleFromLocal() {
+        const saved = localStorage.getItem('scheduleData');
+        if (saved) {
+            scheduleData = JSON.parse(saved);
+        }
+    }
+    
+    // ========== ОТЧЕТ ==========
+    function loadReportYears() {
+        const yearSelect = document.getElementById('reportYear');
+        const currentYear = new Date().getFullYear();
+        yearSelect.innerHTML = '';
+        for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+            yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+        }
+        yearSelect.value = currentYear;
+    }
+    
+    window.generateReport = async function() {
+        const month = parseInt(document.getElementById('reportMonth').value);
+        const year = parseInt(document.getElementById('reportYear').value);
+        
+        const resultDiv = document.getElementById('reportResult');
+        resultDiv.innerHTML = '<div class="empty-message">Загрузка отчета...</div>';
+        
+        await loadStudents();
+        
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const report = [];
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month, day);
+            const dateStr = formatDateForFirebase(date);
+            const attendanceDoc = await getDoc(doc(db, "attendance", dateStr));
+            const dayData = attendanceDoc.exists() ? attendanceDoc.data() : {};
+            report.push({ date: date, data: dayData });
+        }
+        
+        let tableHtml = '<table class="report-table"><thead><tr><th>Студент</th>';
+        for (let day = 1; day <= daysInMonth; day++) {
+            tableHtml += `<th>${day}</th>`;
+        }
+        tableHtml += '<th>%</th></tr></thead><tbody>';
+        
+        for (const student of allStudents) {
+            let presentCount = 0;
+            tableHtml += `<tr><td><strong>${student.lastName} ${student.firstName}</strong></td>`;
+            for (const dayReport of report) {
+                const status = dayReport.data[student.id];
+                let statusSymbol = '❓';
+                if (status === 'present') { statusSymbol = '✓'; presentCount++; }
+                else if (status === 'late') { statusSymbol = '⏰'; presentCount++; }
+                else if (status === 'absent') statusSymbol = '✗';
+                tableHtml += `<td class="${status === 'present' ? 'present-cell' : (status === 'late' ? 'late-cell' : (status === 'absent' ? 'absent-cell' : ''))}">${statusSymbol}</td>`;
+            }
+            const percent = Math.round((presentCount / daysInMonth) * 100);
+            tableHtml += `<td><strong>${percent}%</strong></td>`;
+            tableHtml += `</tr>`;
+        }
+        tableHtml += '</tbody></table>';
+        resultDiv.innerHTML = tableHtml;
+    };
+    
+    window.exportToExcel = function() {
+        const table = document.querySelector('#reportResult table');
+        if (!table) {
+            alert("Сначала сформируйте отчет");
+            return;
+        }
+        const html = table.outerHTML;
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `report_${document.getElementById('reportMonth').value}_${document.getElementById('reportYear').value}.xls`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+    
+    // ========== QR-КОД ==========
+    function generateQRCode() {
+        const scanUrl = window.location.origin.replace(/\/[^\/]*$/, '') + '/Terminal/scan.html';
+        document.getElementById('qrUrl').innerHTML = `🔗 Ссылка: ${scanUrl}`;
+        
+        if (typeof QRCode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+            script.onload = () => createQR(scanUrl);
+            script.onerror = () => document.getElementById('qrCode').innerHTML = '<p style="color: red;">Ошибка загрузки QR</p>';
+            document.head.appendChild(script);
+        } else {
+            createQR(scanUrl);
+        }
+    }
+    
+    function createQR(url) {
+        const qrContainer = document.getElementById('qrCode');
+        qrContainer.innerHTML = '';
+        try {
+            new QRCode(qrContainer, { text: url, width: 200, height: 200 });
+        } catch (error) {
+            qrContainer.innerHTML = '<p>Ошибка генерации QR</p>';
+        }
+    }
+    
+    window.downloadQR = function() {
+        const qrImg = document.querySelector('#qrCode img');
+        if (qrImg) {
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = qrImg.src;
+            link.click();
+        } else {
+            alert("QR-код еще не сгенерирован");
+        }
+    };
+    
+    // ========== ОБНОВЛЕНИЕ ==========
     window.refreshData = async function() {
-        console.log("Обновление данных...");
         await loadStudents();
         await loadAttendance(currentDate);
-        renderStudentsList();
-        updateStats();
-        console.log("Данные обновлены, студентов:", allStudents.length);
+        renderMainPage();
+        renderFullStudentsList();
     };
     
     window.changeDate = function(delta) {
@@ -576,90 +1043,26 @@
         document.getElementById('currentDate').innerHTML = `📅 ${formatDateForDisplay(currentDate)}`;
     }
     
-    window.openAddStudentModal = function() {
-        document.getElementById('studentModal').style.display = 'flex';
-    };
+    window.openAddStudentModal = () => document.getElementById('studentModal').style.display = 'flex';
+    window.closeModal = () => document.getElementById('studentModal').style.display = 'none';
+    window.closeScheduleModal = () => document.getElementById('scheduleModal').style.display = 'none';
+    window.logout = async () => { await signOut(auth); window.location.href = "index.html"; };
     
-    window.closeModal = function() {
-        document.getElementById('studentModal').style.display = 'none';
-        document.getElementById('studentLastName').value = '';
-        document.getElementById('studentFirstName').value = '';
-        document.getElementById('studentGroup').value = '';
-    };
-    
-    window.logout = async function() {
-        await signOut(auth);
-        window.location.href = "index.html";
-    };
-    
-    // Генерация QR-кода (исправленная ссылка)
-    function generateQRCode() {
-        // Получаем правильный URL для scan.html
-        let scanUrl;
-        const currentPath = window.location.pathname;
-        
-        if (currentPath.includes('/sites/')) {
-            // Если мы в папке sites, то scan.html на уровень выше
-            scanUrl = window.location.origin + '/Terminal/scan.html';
-        } else {
-            // Если мы в корне
-            scanUrl = window.location.origin + '/Terminal/scan.html';
-        }
-        
-        console.log("QR URL:", scanUrl);
-        document.getElementById('qrUrl').innerHTML = `🔗 Ссылка для сканирования: ${scanUrl}`;
-        
-        // Проверяем, загружена ли библиотека QRCode
-        if (typeof QRCode === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
-            script.onload = () => {
-                createQR(scanUrl);
-            };
-            script.onerror = () => {
-                document.getElementById('qrCode').innerHTML = '<p style="color: red;">Ошибка загрузки QR-библиотеки</p>';
-            };
-            document.head.appendChild(script);
-        } else {
-            createQR(scanUrl);
-        }
-    }
-    
-    function createQR(url) {
-        const qrContainer = document.getElementById('qrCode');
-        qrContainer.innerHTML = '';
-        try {
-            new QRCode(qrContainer, {
-                text: url,
-                width: 200,
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        } catch (error) {
-            console.error("QR ошибка:", error);
-            qrContainer.innerHTML = '<p>Ошибка генерации QR-кода</p>';
-        }
-    }
-    
+    // ========== ЗАПУСК ==========
     onAuthStateChanged(auth, (user) => {
         if (!user) {
             window.location.href = "index.html";
         } else {
-            console.log("Пользователь авторизован:", user.email);
+            loadScheduleFromLocal();
             updateDateDisplay();
             refreshData();
             setTimeout(generateQRCode, 1000);
         }
     });
     
-    window.onclick = function(event) {
-        if (event.target === document.getElementById('studentModal')) {
-            closeModal();
-        }
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) event.target.style.display = 'none';
     };
 </script>
-
 </body>
 </html>
