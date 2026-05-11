@@ -357,7 +357,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
     
     const firebaseConfig = {
         apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
@@ -392,33 +392,53 @@
     }
     
     async function loadStudents() {
-        const snapshot = await getDocs(collection(db, "students"));
-        allStudents = [];
-        snapshot.forEach(doc => {
-            allStudents.push({ id: doc.id, ...doc.data() });
-        });
-        allStudents.sort((a, b) => a.lastName.localeCompare(b.lastName));
-        return allStudents;
+        try {
+            const querySnapshot = await getDocs(collection(db, "students"));
+            allStudents = [];
+            querySnapshot.forEach(doc => {
+                allStudents.push({ id: doc.id, ...doc.data() });
+            });
+            allStudents.sort((a, b) => a.lastName.localeCompare(b.lastName));
+            return allStudents;
+        } catch (error) {
+            console.error("Ошибка загрузки студентов:", error);
+            return [];
+        }
     }
     
     async function loadAttendance(date) {
-        const dateStr = formatDateForFirebase(date);
-        const docSnap = await getDoc(doc(db, "attendance", dateStr));
-        if (docSnap.exists()) {
-            todayAttendance = docSnap.data();
-        } else {
-            todayAttendance = {};
+        try {
+            const dateStr = formatDateForFirebase(date);
+            const docSnap = await getDoc(doc(db, "attendance", dateStr));
+            if (docSnap.exists()) {
+                todayAttendance = docSnap.data();
+            } else {
+                todayAttendance = {};
+            }
+            return todayAttendance;
+        } catch (error) {
+            console.error("Ошибка загрузки посещаемости:", error);
+            return {};
         }
-        return todayAttendance;
     }
     
     async function saveAttendance(date, studentId, status) {
-        const dateStr = formatDateForFirebase(date);
-        const attendanceRef = doc(db, "attendance", dateStr);
-        await setDoc(attendanceRef, { ...todayAttendance, [studentId]: status }, { merge: true });
-        todayAttendance[studentId] = status;
-        renderStudentsList();
-        updateStats();
+        try {
+            const dateStr = formatDateForFirebase(date);
+            const attendanceRef = doc(db, "attendance", dateStr);
+            const updateData = {
+                ...todayAttendance,
+                [studentId]: status
+            };
+            await setDoc(attendanceRef, updateData);
+            todayAttendance[studentId] = status;
+            renderStudentsList();
+            updateStats();
+            console.log(`Статус ${status} для студента ${studentId} сохранен`);
+        } catch (error) {
+            console.error("Ошибка сохранения:", error);
+            alert("Ошибка при сохранении статуса");
+        }
     }
     
     window.setStatus = function(studentId, status) {
@@ -435,16 +455,33 @@
             return;
         }
         
-        await addDoc(collection(db, "students"), { lastName, firstName, group });
-        closeModal();
-        await refreshData();
-        alert("Студент добавлен!");
+        try {
+            const docRef = await addDoc(collection(db, "students"), { 
+                lastName, 
+                firstName, 
+                group,
+                createdAt: new Date().toISOString()
+            });
+            console.log("Студент добавлен с ID:", docRef.id);
+            closeModal();
+            await refreshData();
+            alert("Студент добавлен!");
+        } catch (error) {
+            console.error("Ошибка добавления студента:", error);
+            alert("Ошибка при добавлении студента: " + error.message);
+        }
     };
     
     window.deleteStudent = async function(studentId) {
         if (confirm("Удалить студента?")) {
-            await deleteDoc(doc(db, "students", studentId));
-            await refreshData();
+            try {
+                await deleteDoc(doc(db, "students", studentId));
+                await refreshData();
+                alert("Студент удален");
+            } catch (error) {
+                console.error("Ошибка удаления:", error);
+                alert("Ошибка при удалении");
+            }
         }
     };
     
@@ -464,8 +501,8 @@
             return `
                 <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <strong>${student.lastName} ${student.firstName}</strong>
-                        <span style="color: #64748b; font-size: 0.85rem; margin-left: 10px;">${student.group}</span>
+                        <strong>${escapeHtml(student.lastName)} ${escapeHtml(student.firstName)}</strong>
+                        <span style="color: #64748b; font-size: 0.85rem; margin-left: 10px;">${escapeHtml(student.group)}</span>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button class="status-btn status-present ${status === 'present' ? 'status-active' : ''}" onclick="setStatus('${student.id}', 'present')">✅ Присутствует</button>
@@ -476,6 +513,16 @@
                 </div>
             `;
         }).join('');
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
     
     function updateStats() {
@@ -498,17 +545,19 @@
         document.getElementById('attendanceRate').textContent = `${attendanceRate}%`;
         
         const lateContainer = document.getElementById('lateList');
-        lateContainer.innerHTML = lateList.length === 0 ? '<li class="empty-message">✅ Нет опоздавших</li>' : lateList.map(name => `<li>${name} <span class="late-badge">опоздал</span></li>`).join('');
+        lateContainer.innerHTML = lateList.length === 0 ? '<li class="empty-message">✅ Нет опоздавших</li>' : lateList.map(name => `<li>${escapeHtml(name)} <span class="late-badge">опоздал</span></li>`).join('');
         
         const absentContainer = document.getElementById('absentList');
-        absentContainer.innerHTML = absentList.length === 0 ? '<li class="empty-message">🎉 Все присутствуют</li>' : absentList.map(name => `<li>${name} <span class="absent-badge">отсутствует</span></li>`).join('');
+        absentContainer.innerHTML = absentList.length === 0 ? '<li class="empty-message">🎉 Все присутствуют</li>' : absentList.map(name => `<li>${escapeHtml(name)} <span class="absent-badge">отсутствует</span></li>`).join('');
     }
     
     window.refreshData = async function() {
+        console.log("Обновление данных...");
         await loadStudents();
         await loadAttendance(currentDate);
         renderStudentsList();
         updateStats();
+        console.log("Данные обновлены, студентов:", allStudents.length);
     };
     
     window.changeDate = function(delta) {
@@ -540,37 +589,65 @@
     
     window.logout = async function() {
         await signOut(auth);
-        window.location.href = "../index.html";
+        window.location.href = "index.html";
     };
     
-    // Генерация QR-кода
+    // Генерация QR-кода (исправленная ссылка)
     function generateQRCode() {
-        const baseUrl = window.location.origin.replace(/\/[^\/]*$/, '');
-        const scanUrl = `${baseUrl}/scan.html`;
+        // Получаем правильный URL для scan.html
+        let scanUrl;
+        const currentPath = window.location.pathname;
         
-        document.getElementById('qrUrl').innerHTML = `🔗 URL для сканирования: ${scanUrl}`;
+        if (currentPath.includes('/sites/')) {
+            // Если мы в папке sites, то scan.html на уровень выше
+            scanUrl = window.location.origin + '/Terminal/scan.html';
+        } else {
+            // Если мы в корне
+            scanUrl = window.location.origin + '/Terminal/scan.html';
+        }
         
-        // Используем внешнюю библиотеку QRCode.js
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
-        script.onload = () => {
-            document.getElementById('qrCode').innerHTML = '';
-            new QRCode(document.getElementById('qrCode'), {
-                text: scanUrl,
+        console.log("QR URL:", scanUrl);
+        document.getElementById('qrUrl').innerHTML = `🔗 Ссылка для сканирования: ${scanUrl}`;
+        
+        // Проверяем, загружена ли библиотека QRCode
+        if (typeof QRCode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+            script.onload = () => {
+                createQR(scanUrl);
+            };
+            script.onerror = () => {
+                document.getElementById('qrCode').innerHTML = '<p style="color: red;">Ошибка загрузки QR-библиотеки</p>';
+            };
+            document.head.appendChild(script);
+        } else {
+            createQR(scanUrl);
+        }
+    }
+    
+    function createQR(url) {
+        const qrContainer = document.getElementById('qrCode');
+        qrContainer.innerHTML = '';
+        try {
+            new QRCode(qrContainer, {
+                text: url,
                 width: 200,
                 height: 200,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
-        };
-        document.head.appendChild(script);
+        } catch (error) {
+            console.error("QR ошибка:", error);
+            qrContainer.innerHTML = '<p>Ошибка генерации QR-кода</p>';
+        }
     }
     
     onAuthStateChanged(auth, (user) => {
         if (!user) {
-            window.location.href = "../index.html";
+            window.location.href = "index.html";
         } else {
+            console.log("Пользователь авторизован:", user.email);
             updateDateDisplay();
             refreshData();
             setTimeout(generateQRCode, 1000);
