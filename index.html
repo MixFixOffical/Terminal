@@ -1,447 +1,130 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в систему | Учет посещаемости студентов</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход | Посещаемость</title>
 
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
 
-        .login-container {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
+.box {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 15px;
+    width: 300px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
 
-        h1 {
-            text-align: center;
-            color: #1e293b;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
+h2 {
+    text-align: center;
+}
 
-        .subtitle {
-            text-align: center;
-            color: #64748b;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+}
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #22c55e;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #334155;
-            font-weight: 500;
-            font-size: 14px;
-        }
+button:hover {
+    background: #16a34a;
+}
 
-        input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .login-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .register-btn {
-            background: #e2e8f0;
-            color: #334155;
-        }
-
-        .register-btn:hover {
-            background: #cbd5e1;
-        }
-
-        .message {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            text-align: center;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c00;
-            border-left: 4px solid #c00;
-        }
-
-        .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-left: 4px solid #2e7d32;
-        }
-
-        .info-message {
-            background: #e3f2fd;
-            color: #1976d2;
-            border-left: 4px solid #1976d2;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .demo-hint {
-            margin-top: 20px;
-            padding: 12px;
-            background: #f8fafc;
-            border-radius: 12px;
-            font-size: 12px;
-            color: #64748b;
-            text-align: center;
-        }
-    </style>
+.switch {
+    text-align: center;
+    margin-top: 10px;
+    cursor: pointer;
+    color: #38bdf8;
+}
+</style>
 </head>
+
 <body>
 
-<div class="login-container">
-    <h1>📚 Добро пожаловать</h1>
-    <div class="subtitle">Система учета посещаемости студентов</div>
+<div class="box">
+    <h2 id="title">Вход</h2>
 
-    <form id="authForm">
-        <div class="form-group">
-            <label>📧 Email</label>
-            <input type="email" id="email" placeholder="student@example.com" required autocomplete="email">
-        </div>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Пароль">
 
-        <div class="form-group">
-            <label>🔒 Пароль</label>
-            <input type="password" id="password" placeholder="минимум 6 символов" required autocomplete="current-password">
-        </div>
+    <button onclick="login()">Войти</button>
 
-        <div class="buttons">
-            <button type="submit" class="login-btn" id="loginBtn">🚪 Войти</button>
-            <button type="button" class="register-btn" id="registerBtn">📝 Регистрация</button>
-        </div>
-    </form>
-
-    <div id="message"></div>
-    
-    <div class="demo-hint">
-        💡 Подсказка: Если нет аккаунта — нажмите "Регистрация".<br>
-        Пароль должен быть не менее 6 символов.
-    </div>
+    <div class="switch" onclick="toggle()">Нет аккаунта? Регистрация</div>
 </div>
 
+<!-- Firebase -->
 <script type="module">
-    // Import Firebase SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
-        authDomain: "agroprombank-637a2.firebaseapp.com",
-        projectId: "agroprombank-637a2",
-        storageBucket: "agroprombank-637a2.firebasestorage.app",
-        messagingSenderId: "16228435746",
-        appId: "1:16228435746:web:d08e247e5fa9c7b418077b",
-        measurementId: "G-PC20WNQK9C"
-    };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+  authDomain: "agroprombank-637a2.firebaseapp.com",
+  projectId: "agroprombank-637a2",
+  storageBucket: "agroprombank-637a2.firebasestorage.app",
+  messagingSenderId: "16228435746",
+  appId: "1:16228435746:web:d08e247e5fa9c7b418077b",
+  measurementId: "G-PC20WNQK9C"
+};
 
-    // Проверяем, не залогинен ли уже пользователь
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Если уже залогинен, сразу переходим на страницу посещаемости
-            window.location.href = "sites/POS.html";
-        }
-    });
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-    // Получаем элементы
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const messageDiv = document.getElementById('message');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const form = document.getElementById('authForm');
+let isLogin = true;
 
-    // Функция показа сообщения
-    function showMessage(text, type = 'error') {
-        messageDiv.innerHTML = text;
-        messageDiv.className = `message ${type === 'error' ? 'error-message' : (type === 'success' ? 'success-message' : 'info-message')}`;
-        
-        // Автоматически скрываем сообщение через 4 секунды
-        setTimeout(() => {
-            if (messageDiv.innerHTML === text) {
-                messageDiv.innerHTML = '';
-                messageDiv.className = 'message';
-            }
-        }, 4000);
-    }
+window.toggle = function() {
+    isLogin = !isLogin;
+    document.getElementById("title").innerText = isLogin ? "Вход" : "Регистрация";
+    document.querySelector("button").innerText = isLogin ? "Войти" : "Создать аккаунт";
+    document.querySelector(".switch").innerText = isLogin 
+        ? "Нет аккаунта? Регистрация" 
+        : "Уже есть аккаунт? Вход";
+}
 
-    // Функция блокировки кнопок
-    function setButtonsLoading(loading) {
-        if (loading) {
-            loginBtn.disabled = true;
-            registerBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="loading"></span> Вход...';
-            registerBtn.innerHTML = 'Подождите...';
+window.login = async function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        if (isLogin) {
+            await signInWithEmailAndPassword(auth, email, password);
+            alert("Успешный вход ✅");
         } else {
-            loginBtn.disabled = false;
-            registerBtn.disabled = false;
-            loginBtn.innerHTML = '🚪 Войти';
-            registerBtn.innerHTML = '📝 Регистрация';
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("Аккаунт создан 🎉");
         }
+    } catch (e) {
+        alert("Ошибка: " + e.message);
     }
-
-    // Вход
-    function login(email, password) {
-        setButtonsLoading(true);
-        
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                showMessage(`✅ Добро пожаловать, ${user.email}! Перенаправление...`, 'success');
-                
-                // Переход на страницу посещаемости через 1 секунду
-                setTimeout(() => {
-                    window.location.href = "sites/POS.html";
-                }, 1000);
-            })
-            .catch((error) => {
-                setButtonsLoading(false);
-                const errorCode = error.code;
-                let errorMessage = "";
-                
-                switch (errorCode) {
-                    case 'auth/user-not-found':
-                        errorMessage = "❌ Пользователь не найден. Зарегистрируйтесь.";
-                        break;
-                    case 'auth/wrong-password':
-                        errorMessage = "❌ Неверный пароль. Попробуйте снова.";
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = "❌ Неверный формат email. Пример: name@domain.com";
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = "⚠️ Слишком много попыток. Попробуйте позже.";
-                        break;
-                    default:
-                        errorMessage = `❌ Ошибка: ${error.message}`;
-                }
-                
-                showMessage(errorMessage, 'error');
-                
-                // Очищаем пароль при ошибке
-                passwordInput.value = '';
-                passwordInput.focus();
-            });
-    }
-
-    // Регистрация
-    function register(email, password) {
-        setButtonsLoading(true);
-        
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                showMessage(`✅ Регистрация успешна! Добро пожаловать, ${user.email}! Перенаправление...`, 'success');
-                
-                // Переход на страницу посещаемости через 1 секунду
-                setTimeout(() => {
-                    window.location.href = "sites/POS.html";
-                }, 1000);
-            })
-            .catch((error) => {
-                setButtonsLoading(false);
-                const errorCode = error.code;
-                let errorMessage = "";
-                
-                switch (errorCode) {
-                    case 'auth/email-already-in-use':
-                        errorMessage = "⚠️ Этот email уже зарегистрирован. Войдите или используйте другой email.";
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage = "⚠️ Слабый пароль. Используйте минимум 6 символов.";
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = "❌ Неверный формат email. Пример: name@domain.com";
-                        break;
-                    default:
-                        errorMessage = `❌ Ошибка: ${error.message}`;
-                }
-                
-                showMessage(errorMessage, 'error');
-                
-                // Очищаем поля при ошибке
-                passwordInput.value = '';
-                emailInput.focus();
-            });
-    }
-
-    // Обработчик отправки формы (вход)
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        
-        // Валидация
-        if (!email) {
-            showMessage("❌ Введите email", 'error');
-            emailInput.focus();
-            return;
-        }
-        
-        if (!password) {
-            showMessage("❌ Введите пароль", 'error');
-            passwordInput.focus();
-            return;
-        }
-        
-        // Простая валидация email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showMessage("❌ Введите корректный email (пример: name@domain.com)", 'error');
-            emailInput.focus();
-            return;
-        }
-        
-        login(email, password);
-    });
-
-    // Обработчик регистрации
-    registerBtn.addEventListener('click', () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        
-        // Валидация
-        if (!email) {
-            showMessage("❌ Введите email для регистрации", 'error');
-            emailInput.focus();
-            return;
-        }
-        
-        if (!password) {
-            showMessage("❌ Введите пароль (минимум 6 символов)", 'error');
-            passwordInput.focus();
-            return;
-        }
-        
-        if (password.length < 6) {
-            showMessage("❌ Пароль должен быть не менее 6 символов", 'error');
-            passwordInput.focus();
-            return;
-        }
-        
-        // Простая валидация email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showMessage("❌ Введите корректный email (пример: name@domain.com)", 'error');
-            emailInput.focus();
-            return;
-        }
-        
-        register(email, password);
-    });
-
-    // Добавляем возможность отправки формы по Enter
-    emailInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (emailInput.value && passwordInput.value) {
-                login(emailInput.value.trim(), passwordInput.value);
-            } else if (emailInput.value) {
-                passwordInput.focus();
-            }
-        }
-    });
-    
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (emailInput.value && passwordInput.value) {
-                login(emailInput.value.trim(), passwordInput.value);
-            }
-        }
-    });
+}
 </script>
 
 </body>
