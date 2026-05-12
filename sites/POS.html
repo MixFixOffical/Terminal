@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель преподавателя | Посещаемость</title>
+    <title>Панель преподавателя | Учет посещаемости</title>
     <style>
         * {
             margin: 0;
@@ -254,7 +254,6 @@
             word-break: break-all;
         }
 
-        /* Стили для страницы студентов */
         .students-header {
             display: flex;
             justify-content: space-between;
@@ -287,7 +286,6 @@
             font-size: 14px;
         }
 
-        /* Стили для расписания */
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
@@ -314,7 +312,10 @@
             cursor: pointer;
         }
 
-        /* Стили для отчета */
+        .edit-schedule:hover {
+            background: #2563eb;
+        }
+
         .report-filters {
             display: flex;
             gap: 15px;
@@ -338,6 +339,10 @@
             cursor: pointer;
         }
 
+        .export-btn:hover {
+            background: #059669;
+        }
+
         .report-table {
             width: 100%;
             border-collapse: collapse;
@@ -353,6 +358,8 @@
 
         .report-table th {
             background: #f1f5f9;
+            position: sticky;
+            top: 0;
         }
 
         .present-cell {
@@ -414,6 +421,10 @@
             cursor: pointer;
         }
 
+        .save-btn:hover {
+            background: #059669;
+        }
+
         .cancel-btn {
             background: #e2e8f0;
             padding: 10px;
@@ -442,6 +453,43 @@
             color: white;
         }
 
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #10b981;
+            color: white;
+            border-radius: 10px;
+            z-index: 1100;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .stat-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
             .top-menu {
                 flex-direction: column;
@@ -454,16 +502,13 @@
             .report-table {
                 font-size: 12px;
             }
-            .report-table th, .report-table td {
-                padding: 5px;
-            }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <!-- ВЕРХНЕЕ МЕНЮ -->
     <div class="top-menu">
         <div class="logo">📚 <span>Учет посещаемости</span></div>
         <div class="nav-tabs">
@@ -475,7 +520,7 @@
         <button class="logout-small" onclick="logout()">🚪 Выйти</button>
     </div>
 
-    <!-- ========== СТРАНИЦА 1: ГЛАВНАЯ ========== -->
+    <!-- Главная страница -->
     <div id="homePage" class="page active-page">
         <div class="stats-grid">
             <div class="card" style="text-align: center;">
@@ -531,7 +576,7 @@
         </div>
     </div>
 
-    <!-- ========== СТРАНИЦА 2: СТУДЕНТЫ ========== -->
+    <!-- Страница студентов -->
     <div id="studentsPage" class="page">
         <div class="card">
             <div class="students-header">
@@ -547,7 +592,7 @@
         </div>
     </div>
 
-    <!-- ========== СТРАНИЦА 3: РАСПИСАНИЕ ========== -->
+    <!-- Страница расписания -->
     <div id="schedulePage" class="page">
         <div class="card">
             <h3>📅 Расписание занятий</h3>
@@ -559,19 +604,21 @@
                 <button class="weekday-btn" data-day="friday">ПТ</button>
                 <button class="weekday-btn" data-day="saturday">СБ</button>
             </div>
-            <table class="schedule-table" id="scheduleTable">
-                <thead>
-                    <tr><th>Время</th><th>Предмет</th><th>Аудитория</th><th>Действия</th></tr>
-                </thead>
-                <tbody id="scheduleBody">
-                    <tr><td colspan="4" class="empty-message">Загрузка...</td></tr>
-                </tbody>
-            </table>
-            <button class="edit-schedule" onclick="openScheduleModal()" style="margin-top: 20px;">✏️ Редактировать расписание</button>
+            <div style="overflow-x: auto;">
+                <table class="schedule-table" id="scheduleTable">
+                    <thead>
+                        <tr><th>Время</th><th>Предмет</th><th>Аудитория</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                        <tr><td colspan="4" class="empty-message">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="edit-schedule" onclick="openScheduleModal()" style="margin-top: 20px;">✏️ Добавить занятие</button>
         </div>
     </div>
 
-    <!-- ========== СТРАНИЦА 4: ОТЧЕТ ========== -->
+    <!-- Страница отчетов -->
     <div id="reportsPage" class="page">
         <div class="card">
             <h3>📊 Отчет по посещаемости</h3>
@@ -585,6 +632,7 @@
                 <select id="reportYear"></select>
                 <button class="export-btn" onclick="generateReport()">📊 Сформировать</button>
                 <button class="export-btn" onclick="exportToExcel()" style="background: #3b82f6;">📎 Экспорт в Excel</button>
+                <button class="export-btn" onclick="exportToPDF()" style="background: #ef4444;">📄 Экспорт в PDF</button>
             </div>
             <div id="reportResult">
                 <div class="empty-message">Выберите месяц и нажмите "Сформировать"</div>
@@ -597,9 +645,9 @@
 <div id="studentModal" class="modal">
     <div class="modal-content">
         <h3>➕ Добавить студента</h3>
-        <input type="text" id="studentLastName" placeholder="Фамилия">
-        <input type="text" id="studentFirstName" placeholder="Имя">
-        <input type="text" id="studentGroup" placeholder="Группа">
+        <input type="text" id="studentLastName" placeholder="Фамилия *">
+        <input type="text" id="studentFirstName" placeholder="Имя *">
+        <input type="text" id="studentGroup" placeholder="Группа" value="Группа 1">
         <div class="modal-buttons">
             <button class="save-btn" onclick="addStudent()">Сохранить</button>
             <button class="cancel-btn" onclick="closeModal()">Отмена</button>
@@ -610,7 +658,7 @@
 <!-- Модальное окно редактирования расписания -->
 <div id="scheduleModal" class="modal">
     <div class="modal-content">
-        <h3>✏️ Редактировать расписание</h3>
+        <h3>✏️ Добавить занятие</h3>
         <input type="text" id="scheduleTime" placeholder="Время (например: 09:00-10:30)">
         <input type="text" id="scheduleSubject" placeholder="Предмет">
         <input type="text" id="scheduleRoom" placeholder="Аудитория">
@@ -624,7 +672,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, addDoc, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, doc, setDoc, getDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
     
     const firebaseConfig = {
         apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
@@ -640,7 +688,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-    // Глобальные переменные
     let currentDate = new Date();
     let allStudents = [];
     let todayAttendance = {};
@@ -654,7 +701,7 @@
         saturday: []
     };
     
-    // ========== НАВИГАЦИЯ ПО ВКЛАДКАМ ==========
+    // Навигация
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -669,7 +716,15 @@
         });
     });
     
-    // ========== ФУНКЦИИ ДАТЫ ==========
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.style.background = type === 'success' ? '#10b981' : '#ef4444';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+    
     function formatDateForFirebase(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -684,18 +739,18 @@
         return `${day}.${month}.${year}`;
     }
     
-    // ========== ЗАГРУЗКА ДАННЫХ ==========
     async function loadStudents() {
         try {
-            const querySnapshot = await getDocs(collection(db, "students"));
+            const q = query(collection(db, "students"), orderBy("lastName"));
+            const querySnapshot = await getDocs(q);
             allStudents = [];
             querySnapshot.forEach(doc => {
                 allStudents.push({ id: doc.id, ...doc.data() });
             });
-            allStudents.sort((a, b) => a.lastName.localeCompare(b.lastName));
             return allStudents;
         } catch (error) {
             console.error("Ошибка загрузки студентов:", error);
+            showNotification("Ошибка загрузки студентов", "error");
             return [];
         }
     }
@@ -725,9 +780,10 @@
             todayAttendance[studentId] = status;
             renderMainPage();
             renderFullStudentsList();
+            showNotification(`Статус обновлен`, "success");
         } catch (error) {
             console.error("Ошибка сохранения:", error);
-            alert("Ошибка при сохранении статуса");
+            showNotification("Ошибка при сохранении статуса", "error");
         }
     }
     
@@ -735,14 +791,13 @@
         saveAttendance(currentDate, studentId, status);
     };
     
-    // ========== СТУДЕНТЫ (CRUD) ==========
     window.addStudent = async function() {
         const lastName = document.getElementById('studentLastName').value.trim();
         const firstName = document.getElementById('studentFirstName').value.trim();
         const group = document.getElementById('studentGroup').value.trim() || "Группа 1";
         
         if (!lastName || !firstName) {
-            alert("Заполните фамилию и имя");
+            showNotification("Заполните фамилию и имя", "error");
             return;
         }
         
@@ -751,23 +806,26 @@
             closeModal();
             await refreshData();
             renderFullStudentsList();
-            alert("Студент добавлен!");
+            showNotification("Студент добавлен!", "success");
+            document.getElementById('studentLastName').value = '';
+            document.getElementById('studentFirstName').value = '';
+            document.getElementById('studentGroup').value = 'Группа 1';
         } catch (error) {
             console.error("Ошибка добавления студента:", error);
-            alert("Ошибка при добавлении студента: " + error.message);
+            showNotification("Ошибка при добавлении студента", "error");
         }
     };
     
     window.deleteStudent = async function(studentId) {
-        if (confirm("Удалить студента?")) {
+        if (confirm("Удалить студента? Это действие нельзя отменить.")) {
             try {
                 await deleteDoc(doc(db, "students", studentId));
                 await refreshData();
                 renderFullStudentsList();
-                alert("Студент удален");
+                showNotification("Студент удален", "success");
             } catch (error) {
                 console.error("Ошибка удаления:", error);
-                alert("Ошибка при удалении");
+                showNotification("Ошибка при удалении", "error");
             }
         }
     };
@@ -849,7 +907,6 @@
     
     document.getElementById('searchStudent')?.addEventListener('input', () => renderFullStudentsList());
     
-    // ========== РАСПИСАНИЕ ==========
     function renderSchedule() {
         const tbody = document.getElementById('scheduleBody');
         const items = scheduleData[currentScheduleDay] || [];
@@ -891,20 +948,24 @@
         const room = document.getElementById('scheduleRoom').value.trim();
         
         if (!time || !subject) {
-            alert("Заполните время и предмет");
+            showNotification("Заполните время и предмет", "error");
             return;
         }
         
-        scheduleData[currentScheduleDay].push({ time, subject, room });
+        scheduleData[currentScheduleDay].push({ time, subject, room: room || "Не указана" });
         renderSchedule();
         closeScheduleModal();
         saveScheduleToLocal();
+        showNotification("Занятие добавлено", "success");
     };
     
     window.deleteScheduleItem = function(index) {
-        scheduleData[currentScheduleDay].splice(index, 1);
-        renderSchedule();
-        saveScheduleToLocal();
+        if (confirm("Удалить занятие?")) {
+            scheduleData[currentScheduleDay].splice(index, 1);
+            renderSchedule();
+            saveScheduleToLocal();
+            showNotification("Занятие удалено", "success");
+        }
     };
     
     function saveScheduleToLocal() {
@@ -918,7 +979,6 @@
         }
     }
     
-    // ========== ОТЧЕТ ==========
     function loadReportYears() {
         const yearSelect = document.getElementById('reportYear');
         const currentYear = new Date().getFullYear();
@@ -934,7 +994,7 @@
         const year = parseInt(document.getElementById('reportYear').value);
         
         const resultDiv = document.getElementById('reportResult');
-        resultDiv.innerHTML = '<div class="empty-message">Загрузка отчета...</div>';
+        resultDiv.innerHTML = '<div class="loading">📊 Формирование отчета...</div>';
         
         await loadStudents();
         
@@ -957,70 +1017,116 @@
         
         for (const student of allStudents) {
             let presentCount = 0;
-            tableHtml += `<tr><td><strong>${student.lastName} ${student.firstName}</strong></td>`;
+            tableHtml += `<tr><td><strong>${escapeHtml(student.lastName)} ${escapeHtml(student.firstName)}</strong><br><small style="color:#64748b">${escapeHtml(student.group)}</small></td>`;
             for (const dayReport of report) {
                 const status = dayReport.data[student.id];
                 let statusSymbol = '❓';
-                if (status === 'present') { statusSymbol = '✓'; presentCount++; }
-                else if (status === 'late') { statusSymbol = '⏰'; presentCount++; }
-                else if (status === 'absent') statusSymbol = '✗';
-                tableHtml += `<td class="${status === 'present' ? 'present-cell' : (status === 'late' ? 'late-cell' : (status === 'absent' ? 'absent-cell' : ''))}">${statusSymbol}<tr>`;
+                let statusClass = '';
+                if (status === 'present') { statusSymbol = '✓'; presentCount++; statusClass = 'present-cell'; }
+                else if (status === 'late') { statusSymbol = '⏰'; presentCount++; statusClass = 'late-cell'; }
+                else if (status === 'absent') { statusSymbol = '✗'; statusClass = 'absent-cell'; }
+                tableHtml += `<td class="${statusClass}">${statusSymbol}</td>`;
             }
             const percent = Math.round((presentCount / daysInMonth) * 100);
             tableHtml += `<td><strong>${percent}%</strong></td>`;
             tableHtml += `</tr>`;
         }
         tableHtml += '</tbody></table></div>';
-        resultDiv.innerHTML = tableHtml;
+        
+        const summaryHtml = `
+            <div class="stat-summary">
+                <div class="summary-card">
+                    <div style="font-size: 24px; font-weight: bold;">${allStudents.length}</div>
+                    <div>Всего студентов</div>
+                </div>
+                <div class="summary-card">
+                    <div style="font-size: 24px; font-weight: bold;">${daysInMonth}</div>
+                    <div>Дней в месяце</div>
+                </div>
+            </div>
+        `;
+        
+        resultDiv.innerHTML = summaryHtml + tableHtml;
     };
     
     window.exportToExcel = function() {
         const table = document.querySelector('#reportResult table');
         if (!table) {
-            alert("Сначала сформируйте отчет");
+            showNotification("Сначала сформируйте отчет", "error");
             return;
         }
-        const html = document.getElementById('reportResult').innerHTML;
+        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+        const month = parseInt(document.getElementById('reportMonth').value);
+        const year = document.getElementById('reportYear').value;
+        const html = `
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Отчет ${monthNames[month]} ${year}</title>
+                <style>td,th{border:1px solid #ccc;padding:5px;}</style>
+            </head>
+            <body>
+                <h2>Отчет по посещаемости - ${monthNames[month]} ${year}</h2>
+                ${table.outerHTML}
+            </body>
+            </html>
+        `;
         const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `report_${document.getElementById('reportMonth').value}_${document.getElementById('reportYear').value}.xls`;
+        link.download = `report_${monthNames[month]}_${year}.xls`;
         link.click();
         URL.revokeObjectURL(link.href);
+        showNotification("Отчет экспортирован", "success");
     };
     
-    // ========== QR-КОД (исправленная ссылка) ==========
-    const QR_SCAN_URL = "https://mixfixoffical.github.io/Terminal/scan.html";
+    window.exportToPDF = function() {
+        const table = document.querySelector('#reportResult table');
+        if (!table) {
+            showNotification("Сначала сформируйте отчет", "error");
+            return;
+        }
+        const printWindow = window.open('', '_blank');
+        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+        const month = parseInt(document.getElementById('reportMonth').value);
+        const year = document.getElementById('reportYear').value;
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Отчет ${monthNames[month]} ${year}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; }
+                    @media print {
+                        body { margin: 0; padding: 10px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h2>Отчет по посещаемости - ${monthNames[month]} ${year}</h2>
+                ${table.outerHTML}
+                <p style="margin-top: 20px;">Дата формирования: ${new Date().toLocaleString()}</p>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    };
     
     function generateQRCode() {
-        document.getElementById('qrUrl').innerHTML = `🔗 Ссылка для сканирования: ${QR_SCAN_URL}`;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const scanUrl = baseUrl.replace(/\/[^\/]*$/, '/Terminal/scan.html');
+        document.getElementById('qrUrl').innerHTML = `🔗 Ссылка для сканирования: <br>${scanUrl}`;
         
-        if (typeof QRCode === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
-            script.onload = () => createQR(QR_SCAN_URL);
-            script.onerror = () => document.getElementById('qrCode').innerHTML = '<p style="color: red;">Ошибка загрузки QR библиотеки</p>';
-            document.head.appendChild(script);
-        } else {
-            createQR(QR_SCAN_URL);
-        }
-    }
-    
-    function createQR(url) {
         const qrContainer = document.getElementById('qrCode');
         qrContainer.innerHTML = '';
         try {
-            new QRCode(qrContainer, { 
-                text: url, 
-                width: 200, 
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff"
-            });
-            console.log("QR-код создан для:", url);
+            new QRCode(qrContainer, { text: scanUrl, width: 200, height: 200 });
         } catch (error) {
-            console.error("QR ошибка:", error);
-            qrContainer.innerHTML = '<p>Ошибка генерации QR-кода</p>';
+            qrContainer.innerHTML = '<p style="color: red;">Ошибка генерации QR-кода</p>';
+            console.error(error);
         }
     }
     
@@ -1031,12 +1137,12 @@
             link.download = 'qrcode.png';
             link.href = qrImg.src;
             link.click();
+            showNotification("QR-код скачан", "success");
         } else {
-            alert("QR-код еще не сгенерирован");
+            showNotification("QR-код еще не сгенерирован", "error");
         }
     };
     
-    // ========== ОБНОВЛЕНИЕ ==========
     window.refreshData = async function() {
         await loadStudents();
         await loadAttendance(currentDate);
@@ -1063,9 +1169,11 @@
     window.openAddStudentModal = () => document.getElementById('studentModal').style.display = 'flex';
     window.closeModal = () => document.getElementById('studentModal').style.display = 'none';
     window.closeScheduleModal = () => document.getElementById('scheduleModal').style.display = 'none';
-    window.logout = async () => { await signOut(auth); window.location.href = "index.html"; };
+    window.logout = async () => { 
+        await signOut(auth); 
+        window.location.href = "index.html"; 
+    };
     
-    // ========== ЗАПУСК ==========
     onAuthStateChanged(auth, (user) => {
         if (!user) {
             window.location.href = "index.html";
@@ -1073,7 +1181,7 @@
             loadScheduleFromLocal();
             updateDateDisplay();
             refreshData();
-            setTimeout(generateQRCode, 1000);
+            setTimeout(generateQRCode, 500);
         }
     });
     
