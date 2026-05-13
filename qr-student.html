@@ -417,8 +417,8 @@
 
     // Получаем параметры из URL
     const urlParams = new URLSearchParams(window.location.search);
-    const groupId = urlParams.get('group');
-    const groupName = urlParams.get('groupName');
+    let groupId = urlParams.get('group');
+    let groupName = urlParams.get('groupName');
 
     let studentsList = [];
     let selectedStudent = null;
@@ -427,7 +427,6 @@
     let workloadData = {};
     let isAlreadyMarked = false;
 
-    // Дни недели (0-6, где 0 - воскресенье)
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
     async function init() {
@@ -436,6 +435,12 @@
         console.log("=== ИНИЦИАЛИЗАЦИЯ ===");
         console.log("groupId:", groupId);
         console.log("groupName:", groupName);
+        
+        // Если groupId не передан, пробуем найти по groupName
+        if (!groupId && groupName) {
+            console.log("Пытаемся найти группу по имени:", groupName);
+            await findGroupByName(groupName);
+        }
         
         if (!groupId) {
             cardBody.innerHTML = `
@@ -455,24 +460,14 @@
         }
         
         try {
-            // Загружаем расписание звонков
             await loadBellSchedule();
-            
-            // Загружаем нагрузку группы
             await loadWorkload();
-            
-            // Загружаем список студентов
             await loadStudents();
-            
-            // Определяем текущий предмет
             determineCurrentSubject();
-            
             renderInterface();
             
-            // Обновляем время каждую секунду
             setInterval(() => {
                 updateCurrentTime();
-                // Каждую минуту перепроверяем предмет
                 if (new Date().getSeconds() === 0) {
                     determineCurrentSubject();
                     renderInterface();
@@ -491,8 +486,25 @@
             `;
         }
     }
+    
+    // Поиск группы по имени
+    async function findGroupByName(name) {
+        try {
+            const groupsRef = collection(db, "groups");
+            const querySnapshot = await getDocs(groupsRef);
+            querySnapshot.forEach(doc => {
+                const group = doc.data();
+                if (group.name === name) {
+                    groupId = doc.id;
+                    groupName = group.name;
+                    console.log("Группа найдена! ID:", groupId);
+                }
+            });
+        } catch (error) {
+            console.error("Ошибка поиска группы:", error);
+        }
+    }
 
-    // Загрузка расписания звонков
     async function loadBellSchedule() {
         try {
             const now = new Date();
@@ -506,14 +518,12 @@
                 bellSchedule.push({ id: doc.id, ...doc.data() });
             });
             bellSchedule.sort((a, b) => a.lessonNumber - b.lessonNumber);
-            
-            console.log("Расписание звонков загружено:", bellSchedule);
+            console.log("Расписание звонков:", bellSchedule);
         } catch (error) {
             console.error("Ошибка загрузки расписания звонков:", error);
         }
     }
 
-    // Загрузка нагрузки группы
     async function loadWorkload() {
         try {
             const workloadRef = doc(db, "workload", groupId);
@@ -521,24 +531,50 @@
             
             if (workloadSnap.exists()) {
                 workloadData = workloadSnap.data().subjects || {};
-                console.log("Нагрузка группы загружена:", workloadData);
+                console.log("Нагрузка группы:", workloadData);
             } else {
-                console.log("Нагрузка для группы не найдена");
+                console.log("Нагрузка не найдена для группы:", groupId);
             }
         } catch (error) {
             console.error("Ошибка загрузки нагрузки:", error);
         }
     }
 
-    // Загрузка студентов группы
     async function loadStudents() {
         try {
+            // Пробуем загрузить студентов из подколлекции groups/{groupId}/students
             const studentsRef = collection(db, "groups", groupId, "students");
             const querySnapshot = await getDocs(studentsRef);
             studentsList = [];
             querySnapshot.forEach(doc => {
-                studentsList.push({ id: doc.id, ...doc.data() });
+                const data = doc.data();
+                // Формируем ФИО из полей firstName, lastName
+                const fullName = `${data.lastName || ''} ${data.firstName || ''}`.trim();
+                studentsList.push({ 
+                    id: doc.id, 
+                    name: fullName || data.name || "Без имени",
+                    ...data 
+                });
             });
+            
+            // Если студентов нет в подколлекции, пробуем загрузить из коллекции students с фильтром по group
+            if (studentsList.length === 0) {
+                console.log("Студенты не найдены в подколлекции, ищем в коллекции students...");
+                const allStudentsRef = collection(db, "students");
+                const allStudentsSnap = await getDocs(allStudentsRef);
+                allStudentsSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.group === groupName || data.groupId === groupId) {
+                        const fullName = `${data.lastName || ''} ${data.firstName || ''}`.trim();
+                        studentsList.push({ 
+                            id: doc.id, 
+                            name: fullName || data.name || "Без имени",
+                            ...data 
+                        });
+                    }
+                });
+            }
+            
             studentsList.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
             console.log("Студенты загружены:", studentsList.length);
         } catch (error) {
@@ -546,55 +582,39 @@
         }
     }
 
-    // Определение текущего предмета по нагрузке и времени
     function determineCurrentSubject() {
         const now = new Date();
-        const dayIndex = now.getDay(); // 0-6
+        const dayIndex = now.getDay();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         
         currentSubject = null;
         
-        // Если воскресенье или нет нагрузки
-        if (dayIndex === 0 || !workloadData) {
+        if (dayIndex === 0 || !workloadData || Object.keys(workloadData).length === 0) {
+            console.log("Нет нагрузки или воскресенье");
             return;
         }
         
-        // Получаем нагрузку на сегодня (dayIndex-1, т.к. в workload дни 0-5)
-        const todayLessons = {};
-        
-        // Собираем все предметы на сегодня
         for (const [subjectId, days] of Object.entries(workloadData)) {
-            const lessons = days[dayIndex - 1]; // dayIndex 1-6 -> 0-5
+            const lessons = days[dayIndex - 1];
             if (lessons && lessons.length > 0) {
-                todayLessons[subjectId] = lessons;
-            }
-        }
-        
-        // Ищем текущий урок по расписанию звонков
-        for (const [subjectId, lessonNumbers] of Object.entries(todayLessons)) {
-            for (const lessonNum of lessonNumbers) {
-                const bell = bellSchedule.find(b => b.lessonNumber === lessonNum);
-                if (bell) {
-                    const [startHour, startMinute] = bell.startTime.split(':').map(Number);
-                    const [endHour, endMinute] = bell.endTime.split(':').map(Number);
-                    const startMinutes = startHour * 60 + startMinute;
-                    const endMinutes = endHour * 60 + endMinute;
-                    
-                    // Урок считается текущим если:
-                    // - за 15 минут до начала
-                    // - во время урока
-                    // - до 30 минут после окончания
-                    if (currentMinutes >= startMinutes - 15 && currentMinutes <= endMinutes + 30) {
-                        // Загружаем информацию о предмете
-                        getSubjectInfo(subjectId, lessonNum, bell.startTime, bell.endTime, startMinutes, endMinutes);
-                        return;
+                for (const lessonNum of lessons) {
+                    const bell = bellSchedule.find(b => b.lessonNumber === lessonNum);
+                    if (bell) {
+                        const [startHour, startMinute] = bell.startTime.split(':').map(Number);
+                        const [endHour, endMinute] = bell.endTime.split(':').map(Number);
+                        const startMinutes = startHour * 60 + startMinute;
+                        const endMinutes = endHour * 60 + endMinute;
+                        
+                        if (currentMinutes >= startMinutes - 15 && currentMinutes <= endMinutes + 30) {
+                            getSubjectInfo(subjectId, lessonNum, bell.startTime, bell.endTime, startMinutes, endMinutes);
+                            return;
+                        }
                     }
                 }
             }
         }
     }
     
-    // Получение информации о предмете
     async function getSubjectInfo(subjectId, lessonNum, startTime, endTime, startMinutes, endMinutes) {
         try {
             const subjectRef = doc(db, "subjects", subjectId);
@@ -628,7 +648,6 @@
         }
     }
 
-    // Проверка, отмечался ли студент сегодня
     async function checkAlreadyMarked(studentId) {
         const today = new Date().toISOString().split('T')[0];
         try {
@@ -641,7 +660,6 @@
         }
     }
 
-    // Получить статус посещения
     function getAttendanceStatus() {
         if (!currentSubject) return { status: 'no_lesson', text: 'Нет уроков', color: '#999' };
         
@@ -663,7 +681,6 @@
         }
     }
 
-    // Отметка посещаемости
     async function markAttendance() {
         if (!selectedStudent) {
             showMessage('Выберите студента', 'warning');
@@ -718,11 +735,9 @@
         }
     }
 
-    // Выбор студента
     window.selectStudent = async function(studentId) {
         selectedStudent = studentsList.find(s => s.id === studentId);
         
-        // Обновляем стили
         document.querySelectorAll('.student-option').forEach(el => {
             el.classList.remove('selected');
             if (el.dataset.id === studentId) {
@@ -730,12 +745,10 @@
             }
         });
         
-        // Проверяем, отмечался ли уже
         isAlreadyMarked = await checkAlreadyMarked(studentId);
         renderInterface();
     };
 
-    // Поиск студентов
     window.searchStudents = function() {
         const searchTerm = document.getElementById("studentSearch").value.toLowerCase();
         const listDiv = document.getElementById("studentList");
@@ -756,7 +769,6 @@
         `).join('');
     };
 
-    // Обновление текущего времени
     function updateCurrentTime() {
         const timeElement = document.getElementById("currentTimeValue");
         const dateElement = document.getElementById("currentDateValue");
@@ -771,7 +783,6 @@
         }
     }
 
-    // Рендер интерфейса
     function renderInterface() {
         const cardBody = document.getElementById("cardBody");
         const status = getAttendanceStatus();
@@ -782,16 +793,11 @@
                     <div class="icon">✅</div>
                     <h3>Посещаемость отмечена!</h3>
                     <p>${escapeHtml(selectedStudent.name)}, вы уже отметились сегодня.</p>
-                    <p style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
-                        📅 ${new Date().toLocaleDateString('ru')}<br>
-                        🕐 ${new Date().toLocaleTimeString('ru')}
-                    </p>
                 </div>
             `;
             return;
         }
         
-        // Если нет студентов
         if (studentsList.length === 0) {
             cardBody.innerHTML = `
                 <div class="already-marked">
@@ -812,7 +818,7 @@
             <div class="info-panel">
                 <div class="info-row">
                     <span class="info-label">📚 Группа:</span>
-                    <span class="info-value">${escapeHtml(groupName || 'Не указана')}</span>
+                    <span class="info-value">${escapeHtml(groupName || groupId || 'Не указана')}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">📅 День недели:</span>
@@ -832,7 +838,6 @@
                 <div class="no-lesson">
                     <div style="font-size: 48px; margin-bottom: 10px;">📭</div>
                     <div>В данный момент нет уроков</div>
-                    <div style="font-size: 12px; opacity: 0.7; margin-top: 8px;">По расписанию занятий</div>
                 </div>
             `}
             
@@ -857,11 +862,9 @@
             <div id="messageContainer"></div>
         `;
         
-        // Обновляем время
         updateCurrentTime();
     }
 
-    // Показать сообщение
     function showMessage(text, type) {
         const container = document.getElementById("messageContainer");
         if (container) {
@@ -874,7 +877,6 @@
         }
     }
 
-    // Эскейп HTML
     function escapeHtml(str) {
         if (!str) return "";
         return str.replace(/[&<>]/g, function(m) {
@@ -885,7 +887,6 @@
         });
     }
 
-    // Запуск
     init();
 </script>
 
