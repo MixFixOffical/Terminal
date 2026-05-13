@@ -28,7 +28,6 @@
             color: #e0e0e0;
         }
 
-        /* Контейнер */
         .container {
             min-height: 100vh;
             display: flex;
@@ -37,9 +36,8 @@
             padding: 20px;
         }
 
-        /* Карточка */
         .card {
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             border-radius: 32px;
             backdrop-filter: blur(10px);
@@ -67,7 +65,6 @@
             }
         }
 
-        /* Шапка карточки */
         .card-header {
             text-align: center;
             padding: 30px 30px 20px;
@@ -101,12 +98,10 @@
             opacity: 0.7;
         }
 
-        /* Тело карточки */
         .card-body {
             padding: 30px;
         }
 
-        /* Информация о группе и времени */
         .info-panel {
             background: rgba(0,0,0,0.05);
             border-radius: 20px;
@@ -139,7 +134,7 @@
         }
 
         .time-value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
         }
 
@@ -151,7 +146,6 @@
             color: #ffd700;
         }
 
-        /* Предмет */
         .subject-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
@@ -202,7 +196,11 @@
             color: white;
         }
 
-        /* Выбор студента */
+        .status-future {
+            background: rgba(33, 150, 243, 0.9);
+            color: white;
+        }
+
         .student-select {
             margin-bottom: 25px;
         }
@@ -240,7 +238,7 @@
         }
 
         .student-list {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             margin-top: 10px;
             border-radius: 14px;
@@ -275,7 +273,6 @@
             background: rgba(255, 215, 0, 0.2);
         }
 
-        /* Кнопка отметки */
         .mark-btn {
             width: 100%;
             padding: 16px;
@@ -304,7 +301,6 @@
             background: #444;
         }
 
-        /* Сообщение об отметке */
         .message {
             margin-top: 20px;
             padding: 15px;
@@ -335,7 +331,6 @@
             display: block;
         }
 
-        /* Уже отмечено */
         .already-marked {
             text-align: center;
             padding: 40px;
@@ -346,12 +341,6 @@
             margin-bottom: 20px;
         }
 
-        /* Скрытые элементы */
-        .hidden {
-            display: none;
-        }
-
-        /* Анимация загрузки */
         .loading {
             text-align: center;
             padding: 40px;
@@ -371,7 +360,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Текущее время */
         .current-time {
             text-align: center;
             margin-bottom: 20px;
@@ -381,6 +369,13 @@
             font-size: 14px;
             opacity: 0.7;
             margin-top: 5px;
+        }
+
+        .no-lesson {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 16px;
         }
     </style>
 </head>
@@ -395,7 +390,6 @@
         </div>
 
         <div class="card-body" id="cardBody">
-            <!-- Контент будет загружаться динамически -->
             <div class="loading">
                 <div class="spinner"></div>
                 <p>Загрузка данных...</p>
@@ -407,7 +401,7 @@
 <!-- Firebase -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
@@ -429,16 +423,19 @@
     let studentsList = [];
     let selectedStudent = null;
     let currentSubject = null;
-    let currentSchedule = null;
+    let bellSchedule = [];
+    let workloadData = {};
     let isAlreadyMarked = false;
-    let lateMinutes = 0;
 
-    // Дни недели
+    // Дни недели (0-6, где 0 - воскресенье)
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
-    // Загрузка страницы
     async function init() {
         const cardBody = document.getElementById("cardBody");
+        
+        console.log("=== ИНИЦИАЛИЗАЦИЯ ===");
+        console.log("groupId:", groupId);
+        console.log("groupName:", groupName);
         
         if (!groupId) {
             cardBody.innerHTML = `
@@ -446,109 +443,90 @@
                     <div class="icon">❌</div>
                     <h3>Ошибка</h3>
                     <p>Не указана группа. QR-код некорректен.</p>
+                    <p style="margin-top: 15px; font-size: 12px; opacity: 0.6;">
+                        Параметры URL: ${window.location.search || "отсутствуют"}
+                    </p>
+                    <button onclick="location.href='qr-code.html'" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        ← Вернуться к генерации QR
+                    </button>
                 </div>
             `;
             return;
         }
-
-        // Загружаем расписание звонков
-        await loadBellSchedule();
         
-        // Загружаем расписание группы (нагрузку)
-        await loadGroupSchedule();
-        
-        // Загружаем студентов
-        await loadStudents();
-        
-        // Проверяем, отмечался ли уже студент сегодня
-        // Будет проверено при выборе студента
-        
-        renderInterface();
-        
-        // Обновляем время каждую секунду
-        setInterval(updateCurrentTime, 1000);
-        updateCurrentTime();
+        try {
+            // Загружаем расписание звонков
+            await loadBellSchedule();
+            
+            // Загружаем нагрузку группы
+            await loadWorkload();
+            
+            // Загружаем список студентов
+            await loadStudents();
+            
+            // Определяем текущий предмет
+            determineCurrentSubject();
+            
+            renderInterface();
+            
+            // Обновляем время каждую секунду
+            setInterval(() => {
+                updateCurrentTime();
+                // Каждую минуту перепроверяем предмет
+                if (new Date().getSeconds() === 0) {
+                    determineCurrentSubject();
+                    renderInterface();
+                }
+            }, 1000);
+            
+            updateCurrentTime();
+        } catch (error) {
+            console.error("Ошибка инициализации:", error);
+            cardBody.innerHTML = `
+                <div class="already-marked">
+                    <div class="icon">❌</div>
+                    <h3>Ошибка загрузки</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
     }
 
     // Загрузка расписания звонков
     async function loadBellSchedule() {
         try {
-            const today = new Date();
-            const dayOfWeek = today.getDay(); // 1-6 понедельник-суббота
-            const shift = today.getHours() < 14 ? 'first' : 'second'; // простая логика
+            const now = new Date();
+            const currentHour = now.getHours();
+            const shift = currentHour < 14 ? 'first' : 'second';
             
             const q = query(collection(db, "bellSchedule"), where("shift", "==", shift));
             const querySnapshot = await getDocs(q);
-            
-            currentSchedule = [];
+            bellSchedule = [];
             querySnapshot.forEach(doc => {
-                currentSchedule.push({ id: doc.id, ...doc.data() });
+                bellSchedule.push({ id: doc.id, ...doc.data() });
             });
-            currentSchedule.sort((a, b) => a.lessonNumber - b.lessonNumber);
+            bellSchedule.sort((a, b) => a.lessonNumber - b.lessonNumber);
+            
+            console.log("Расписание звонков загружено:", bellSchedule);
         } catch (error) {
             console.error("Ошибка загрузки расписания звонков:", error);
         }
     }
 
-    // Загрузка расписания группы (нагрузка)
-    async function loadGroupSchedule() {
+    // Загрузка нагрузки группы
+    async function loadWorkload() {
         try {
             const workloadRef = doc(db, "workload", groupId);
             const workloadSnap = await getDoc(workloadRef);
             
             if (workloadSnap.exists()) {
-                const workload = workloadSnap.data().subjects || {};
-                const today = new Date();
-                const dayIndex = today.getDay(); // 0-6, где 0 воскресенье
-                
-                if (dayIndex >= 1 && dayIndex <= 6) {
-                    const currentHour = today.getHours();
-                    const currentMinute = today.getMinutes();
-                    const currentTimeMinutes = currentHour * 60 + currentMinute;
-                    
-                    // Ищем текущий урок
-                    for (const [subjectId, days] of Object.entries(workload)) {
-                        const lessons = days[dayIndex - 1]; // dayIndex 1-6 -> 0-5
-                        if (lessons && lessons.length > 0) {
-                            // Получаем информацию о предмете
-                            const subjectRef = doc(db, "subjects", subjectId);
-                            const subjectSnap = await getDoc(subjectRef);
-                            
-                            if (subjectSnap.exists()) {
-                                const subject = subjectSnap.data();
-                                
-                                // Находим какой сейчас урок по времени
-                                for (const lessonNum of lessons) {
-                                    const bell = currentSchedule.find(b => b.lessonNumber === lessonNum);
-                                    if (bell) {
-                                        const [startHour, startMinute] = bell.startTime.split(':').map(Number);
-                                        const [endHour, endMinute] = bell.endTime.split(':').map(Number);
-                                        const startMinutes = startHour * 60 + startMinute;
-                                        const endMinutes = endHour * 60 + endMinute;
-                                        
-                                        // Если текущее время в пределах урока или урок уже начался
-                                        if (currentTimeMinutes >= startMinutes - 15 && currentTimeMinutes <= endMinutes + 30) {
-                                            currentSubject = {
-                                                id: subjectId,
-                                                name: subject.name,
-                                                lessonNumber: lessonNum,
-                                                startTime: bell.startTime,
-                                                endTime: bell.endTime,
-                                                startMinutes: startMinutes,
-                                                endMinutes: endMinutes
-                                            };
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (currentSubject) break;
-                    }
-                }
+                workloadData = workloadSnap.data().subjects || {};
+                console.log("Нагрузка группы загружена:", workloadData);
+            } else {
+                console.log("Нагрузка для группы не найдена");
             }
         } catch (error) {
-            console.error("Ошибка загрузки расписания группы:", error);
+            console.error("Ошибка загрузки нагрузки:", error);
         }
     }
 
@@ -562,66 +540,124 @@
                 studentsList.push({ id: doc.id, ...doc.data() });
             });
             studentsList.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+            console.log("Студенты загружены:", studentsList.length);
         } catch (error) {
             console.error("Ошибка загрузки студентов:", error);
+        }
+    }
+
+    // Определение текущего предмета по нагрузке и времени
+    function determineCurrentSubject() {
+        const now = new Date();
+        const dayIndex = now.getDay(); // 0-6
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        currentSubject = null;
+        
+        // Если воскресенье или нет нагрузки
+        if (dayIndex === 0 || !workloadData) {
+            return;
+        }
+        
+        // Получаем нагрузку на сегодня (dayIndex-1, т.к. в workload дни 0-5)
+        const todayLessons = {};
+        
+        // Собираем все предметы на сегодня
+        for (const [subjectId, days] of Object.entries(workloadData)) {
+            const lessons = days[dayIndex - 1]; // dayIndex 1-6 -> 0-5
+            if (lessons && lessons.length > 0) {
+                todayLessons[subjectId] = lessons;
+            }
+        }
+        
+        // Ищем текущий урок по расписанию звонков
+        for (const [subjectId, lessonNumbers] of Object.entries(todayLessons)) {
+            for (const lessonNum of lessonNumbers) {
+                const bell = bellSchedule.find(b => b.lessonNumber === lessonNum);
+                if (bell) {
+                    const [startHour, startMinute] = bell.startTime.split(':').map(Number);
+                    const [endHour, endMinute] = bell.endTime.split(':').map(Number);
+                    const startMinutes = startHour * 60 + startMinute;
+                    const endMinutes = endHour * 60 + endMinute;
+                    
+                    // Урок считается текущим если:
+                    // - за 15 минут до начала
+                    // - во время урока
+                    // - до 30 минут после окончания
+                    if (currentMinutes >= startMinutes - 15 && currentMinutes <= endMinutes + 30) {
+                        // Загружаем информацию о предмете
+                        getSubjectInfo(subjectId, lessonNum, bell.startTime, bell.endTime, startMinutes, endMinutes);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Получение информации о предмете
+    async function getSubjectInfo(subjectId, lessonNum, startTime, endTime, startMinutes, endMinutes) {
+        try {
+            const subjectRef = doc(db, "subjects", subjectId);
+            const subjectSnap = await getDoc(subjectRef);
+            
+            if (subjectSnap.exists()) {
+                const subject = subjectSnap.data();
+                currentSubject = {
+                    id: subjectId,
+                    name: subject.name,
+                    lessonNumber: lessonNum,
+                    startTime: startTime,
+                    endTime: endTime,
+                    startMinutes: startMinutes,
+                    endMinutes: endMinutes
+                };
+            } else {
+                currentSubject = {
+                    id: subjectId,
+                    name: "Предмет",
+                    lessonNumber: lessonNum,
+                    startTime: startTime,
+                    endTime: endTime,
+                    startMinutes: startMinutes,
+                    endMinutes: endMinutes
+                };
+            }
+            console.log("Текущий предмет:", currentSubject);
+        } catch (error) {
+            console.error("Ошибка загрузки предмета:", error);
         }
     }
 
     // Проверка, отмечался ли студент сегодня
     async function checkAlreadyMarked(studentId) {
         const today = new Date().toISOString().split('T')[0];
-        const attendanceRef = doc(db, "attendance", `${studentId}_${today}`);
-        const attendanceSnap = await getDoc(attendanceRef);
-        return attendanceSnap.exists();
-    }
-
-    // Расчет опоздания
-    function calculateLate() {
-        if (!currentSubject) return 0;
-        
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        
-        if (currentMinutes > currentSubject.endMinutes) {
-            return currentMinutes - currentSubject.endMinutes;
-        } else if (currentMinutes > currentSubject.startMinutes) {
-            return currentMinutes - currentSubject.startMinutes;
-        }
-        return 0;
-    }
-
-    // Обновление текущего времени
-    function updateCurrentTime() {
-        const timeElement = document.getElementById("currentTimeValue");
-        const dateElement = document.getElementById("currentDateValue");
-        
-        if (timeElement) {
-            const now = new Date();
-            timeElement.textContent = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-        if (dateElement) {
-            const now = new Date();
-            dateElement.textContent = now.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
+        try {
+            const attendanceRef = doc(db, "attendance", `${studentId}_${today}`);
+            const attendanceSnap = await getDoc(attendanceRef);
+            return attendanceSnap.exists();
+        } catch (error) {
+            console.error("Ошибка проверки отметки:", error);
+            return false;
         }
     }
 
     // Получить статус посещения
     function getAttendanceStatus() {
-        if (!currentSubject) return { status: 'unknown', text: 'Нет расписания' };
+        if (!currentSubject) return { status: 'no_lesson', text: 'Нет уроков', color: '#999' };
         
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         
         if (currentMinutes < currentSubject.startMinutes - 15) {
-            return { status: 'future', text: 'Урок еще не начался', color: '#ff9800' };
+            return { status: 'future', text: '⏰ Урок еще не начался', color: '#2196F3' };
         } else if (currentMinutes <= currentSubject.startMinutes + 10) {
             return { status: 'on_time', text: '✅ Вовремя', color: '#4CAF50' };
         } else if (currentMinutes <= currentSubject.endMinutes) {
             const late = currentMinutes - currentSubject.startMinutes;
-            return { status: 'late', text: `⚠️ Опоздание на ${late} мин`, color: '#ff9800' };
+            return { status: 'late', text: `⚠️ Опоздание на ${late} мин`, color: '#ff9800', lateMinutes: late };
         } else if (currentMinutes <= currentSubject.endMinutes + 30) {
             const late = currentMinutes - currentSubject.startMinutes;
-            return { status: 'very_late', text: `⚠️ Сильное опоздание на ${late} мин`, color: '#e74c3c' };
+            return { status: 'very_late', text: `⚠️ Сильное опоздание на ${late} мин`, color: '#e74c3c', lateMinutes: late };
         } else {
             return { status: 'missed', text: '❌ Урок пропущен', color: '#e74c3c' };
         }
@@ -649,8 +685,7 @@
             const attendanceId = `${selectedStudent.id}_${today}`;
             
             const status = getAttendanceStatus();
-            const lateMinutes = status.status === 'late' || status.status === 'very_late' ? 
-                now.getMinutes() - currentSubject.startMinutes : 0;
+            const lateMinutes = status.lateMinutes || 0;
             
             const attendanceData = {
                 studentId: selectedStudent.id,
@@ -684,7 +719,7 @@
     }
 
     // Выбор студента
-    window.selectStudent = function(studentId) {
+    window.selectStudent = async function(studentId) {
         selectedStudent = studentsList.find(s => s.id === studentId);
         
         // Обновляем стили
@@ -696,10 +731,8 @@
         });
         
         // Проверяем, отмечался ли уже
-        checkAlreadyMarked(studentId).then(marked => {
-            isAlreadyMarked = marked;
-            renderInterface();
-        });
+        isAlreadyMarked = await checkAlreadyMarked(studentId);
+        renderInterface();
     };
 
     // Поиск студентов
@@ -710,7 +743,7 @@
         const filtered = studentsList.filter(s => s.name.toLowerCase().includes(searchTerm));
         
         if (filtered.length === 0) {
-            listDiv.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.6;">Студент не найден</div>';
+            listDiv.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.6;">👨‍🎓 Студент не найден</div>';
             return;
         }
         
@@ -723,6 +756,21 @@
         `).join('');
     };
 
+    // Обновление текущего времени
+    function updateCurrentTime() {
+        const timeElement = document.getElementById("currentTimeValue");
+        const dateElement = document.getElementById("currentDateValue");
+        
+        if (timeElement) {
+            const now = new Date();
+            timeElement.textContent = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        if (dateElement) {
+            const now = new Date();
+            dateElement.textContent = now.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+    }
+
     // Рендер интерфейса
     function renderInterface() {
         const cardBody = document.getElementById("cardBody");
@@ -733,10 +781,23 @@
                 <div class="already-marked">
                     <div class="icon">✅</div>
                     <h3>Посещаемость отмечена!</h3>
-                    <p>${selectedStudent.name}, вы уже отметились сегодня.</p>
+                    <p>${escapeHtml(selectedStudent.name)}, вы уже отметились сегодня.</p>
                     <p style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
-                        Отметка действительна на сегодня
+                        📅 ${new Date().toLocaleDateString('ru')}<br>
+                        🕐 ${new Date().toLocaleTimeString('ru')}
                     </p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Если нет студентов
+        if (studentsList.length === 0) {
+            cardBody.innerHTML = `
+                <div class="already-marked">
+                    <div class="icon">👨‍🎓</div>
+                    <h3>Нет студентов</h3>
+                    <p>В этой группе пока нет студентов</p>
                 </div>
             `;
             return;
@@ -753,20 +814,25 @@
                     <span class="info-label">📚 Группа:</span>
                     <span class="info-value">${escapeHtml(groupName || 'Не указана')}</span>
                 </div>
+                <div class="info-row">
+                    <span class="info-label">📅 День недели:</span>
+                    <span class="info-value">${daysOfWeek[new Date().getDay()]}</span>
+                </div>
             </div>
             
             ${currentSubject ? `
                 <div class="subject-card">
                     <div class="subject-name">📖 ${escapeHtml(currentSubject.name)}</div>
                     <div class="subject-time">⏰ ${currentSubject.startTime} - ${currentSubject.endTime} (${currentSubject.lessonNumber}-й урок)</div>
-                    <div class="status-badge ${status.status === 'on_time' ? 'status-on-time' : (status.status === 'late' || status.status === 'very_late' ? 'status-late' : 'status-missed')}">
+                    <div class="status-badge" style="background: ${status.color}">
                         ${status.text}
                     </div>
                 </div>
             ` : `
-                <div class="subject-card" style="background: #999;">
-                    <div class="subject-name">📖 Нет расписания</div>
-                    <div class="subject-time">В данный момент уроков нет</div>
+                <div class="no-lesson">
+                    <div style="font-size: 48px; margin-bottom: 10px;">📭</div>
+                    <div>В данный момент нет уроков</div>
+                    <div style="font-size: 12px; opacity: 0.7; margin-top: 8px;">По расписанию занятий</div>
                 </div>
             `}
             
@@ -784,7 +850,7 @@
                 </div>
             </div>
             
-            <button class="mark-btn" id="markBtn" onclick="markAttendance()" ${!selectedStudent ? 'disabled' : ''}>
+            <button class="mark-btn" id="markBtn" onclick="markAttendance()" ${!selectedStudent || !currentSubject ? 'disabled' : ''}>
                 ✅ Отметить посещаемость
             </button>
             
