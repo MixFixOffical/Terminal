@@ -48,7 +48,6 @@
             flex-direction: column;
         }
 
-        /* Шапка */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -125,7 +124,6 @@
             color: #1a1a2e;
         }
 
-        /* Хедер */
         .hero {
             text-align: center;
             padding: 30px 20px 20px;
@@ -171,7 +169,6 @@
             background: linear-gradient(90deg, transparent, #ffd700, transparent);
         }
 
-        /* Основной контент */
         .content {
             max-width: 800px;
             margin: 0 auto;
@@ -179,7 +176,6 @@
             flex: 1;
         }
 
-        /* Выбор группы */
         .group-selector {
             background: rgba(255,255,255,0.1);
             border-radius: 20px;
@@ -220,7 +216,6 @@
             border-color: #ffd700;
         }
 
-        /* QR-код блок */
         .qr-container {
             display: none;
             text-align: center;
@@ -267,11 +262,6 @@
             color: #ffd700;
         }
 
-        .qr-header p {
-            font-size: 14px;
-            opacity: 0.7;
-        }
-
         .qr-code-wrapper {
             background: white;
             padding: 25px;
@@ -287,6 +277,34 @@
             display: block;
         }
 
+        .test-link {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        body.dark .test-link {
+            background: #2a2a3a;
+        }
+
+        .test-link p {
+            font-size: 12px;
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+
+        .test-link a {
+            color: #4CAF50;
+            word-break: break-all;
+            font-size: 12px;
+        }
+
+        body.dark .test-link a {
+            color: #ffd700;
+        }
+
         .group-info {
             margin: 20px 0;
             padding: 15px;
@@ -296,32 +314,6 @@
 
         body.dark .group-info {
             background: rgba(255,255,255,0.05);
-        }
-
-        .group-info p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .group-info strong {
-            color: #4CAF50;
-        }
-
-        body.dark .group-info strong {
-            color: #ffd700;
-        }
-
-        .qr-link {
-            margin: 15px 0;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 12px;
-            font-size: 12px;
-            word-break: break-all;
-        }
-
-        body.dark .qr-link {
-            background: #2a2a3a;
         }
 
         .action-buttons {
@@ -349,19 +341,9 @@
             color: white;
         }
 
-        .download-btn:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-        }
-
         .print-btn {
             background: #2196F3;
             color: white;
-        }
-
-        .print-btn:hover {
-            background: #0b7dda;
-            transform: translateY(-2px);
         }
 
         body.dark .download-btn {
@@ -374,7 +356,6 @@
             color: white;
         }
 
-        /* Инфо-блок */
         .info-block {
             margin-top: 30px;
             padding: 20px;
@@ -390,33 +371,6 @@
             background: rgba(0,0,0,0.3);
         }
 
-        .info-block h4 {
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .info-block p {
-            font-size: 13px;
-            opacity: 0.7;
-        }
-
-        .info-block ul {
-            text-align: left;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 13px;
-            opacity: 0.7;
-        }
-
-        /* Пустое состояние */
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            opacity: 0.6;
-            font-size: 16px;
-        }
-
-        /* Футер */
         .footer {
             text-align: center;
             padding: 30px;
@@ -426,31 +380,10 @@
         }
 
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 32px;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .qr-card {
-                padding: 25px 20px;
-            }
-            
-            .qr-code-wrapper canvas {
-                width: 200px;
-                height: 200px;
-            }
-            
-            .action-buttons {
-                gap: 10px;
-            }
-            
-            .download-btn, .print-btn {
-                padding: 10px 18px;
-                font-size: 12px;
-            }
+            .hero h1 { font-size: 32px; }
+            .content { padding: 20px; }
+            .qr-card { padding: 25px 20px; }
+            .qr-code-wrapper canvas { width: 200px; height: 200px; }
         }
     </style>
 </head>
@@ -490,7 +423,7 @@
 
                 <div class="group-info" id="groupInfo"></div>
 
-                <div class="qr-link" id="qrLink"></div>
+                <div class="test-link" id="testLink"></div>
 
                 <div class="action-buttons">
                     <button class="download-btn" onclick="downloadQR()">💾 Скачать QR-код</button>
@@ -505,11 +438,6 @@
             2. Скачайте или распечатайте QR-код<br>
             3. Студенты сканируют код на уроке<br>
             4. Отметка автоматически фиксируется в системе</p>
-            <ul>
-                <li>• Каждый QR-код уникален для группы</li>
-                <li>• Студент может отметить только свою группу</li>
-                <li>• Отметка сохраняется с датой и временем</li>
-            </ul>
         </div>
     </div>
 
@@ -518,13 +446,11 @@
     </div>
 </div>
 
-<!-- QR библиотека -->
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
-<!-- Firebase -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
@@ -543,7 +469,6 @@
     let currentGroupId = null;
     let currentGroupName = null;
 
-    // Загрузка групп
     async function loadGroups() {
         try {
             const querySnapshot = await getDocs(collection(db, "groups"));
@@ -566,19 +491,19 @@
         }
     }
 
-    // Генерация QR-кода для группы
     function generateQRCode(groupId, groupName) {
         const qrDiv = document.getElementById("qrcode");
         qrDiv.innerHTML = "";
         
-        // Формируем URL для отметки посещаемости
-        // Базовый URL - текущий домен
-        const baseUrl = window.location.origin;
-        const attendanceUrl = `${baseUrl}/mark-attendance.html?group=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}`;
+        // ФИКСИРОВАННЫЙ URL для GitHub Pages
+        // Используем абсолютный путь к вашему файлу
+        const baseUrl = "https://mixfixoffical.github.io/Terminal";
+        const studentPageUrl = `${baseUrl}/qr-student.html?group=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}`;
         
-        // Создаем QR код
+        console.log("Генерация QR для URL:", studentPageUrl);
+        
         currentQR = new QRCode(qrDiv, {
-            text: attendanceUrl,
+            text: studentPageUrl,
             width: 250,
             height: 250,
             colorDark: "#000000",
@@ -586,7 +511,15 @@
             correctLevel: QRCode.CorrectLevel.H
         });
         
-        // Адаптация под мобильные
+        // Показываем тестовую ссылку
+        const testLinkDiv = document.getElementById("testLink");
+        testLinkDiv.innerHTML = `
+            <p>🔗 <strong>Ссылка для тестирования:</strong></p>
+            <a href="${studentPageUrl}" target="_blank">${studentPageUrl}</a>
+            <p style="margin-top:8px; font-size:11px;">✅ Кликните для проверки работы страницы отметки</p>
+            <p style="margin-top:5px; font-size:11px; color:#e74c3c;">⚠️ Если открывается ошибка, проверьте что файл qr-student.html существует в папке Terminal</p>
+        `;
+        
         setTimeout(() => {
             const canvas = qrDiv.querySelector('canvas');
             if (canvas && window.innerWidth <= 768) {
@@ -595,13 +528,9 @@
             }
         }, 100);
         
-        // Сохраняем URL для отображения
-        document.getElementById("qrLink").innerHTML = `<strong>🔗 Ссылка для отметки:</strong><br>${attendanceUrl}`;
-        
-        return attendanceUrl;
+        return studentPageUrl;
     }
 
-    // При изменении группы
     window.onGroupChange = async function() {
         const groupSelect = document.getElementById("groupSelect");
         currentGroupId = groupSelect.value;
@@ -611,58 +540,24 @@
             return;
         }
         
-        // Находим выбранную группу
         const selectedGroup = groupsList.find(g => g.id === currentGroupId);
         if (!selectedGroup) return;
         
         currentGroupName = selectedGroup.name;
         const curator = selectedGroup.curator || "не назначен";
         
-        // Показываем контейнер с QR
         const qrContainer = document.getElementById("qrContainer");
         qrContainer.style.display = "block";
         
-        // Обновляем информацию о группе
         document.getElementById("groupInfo").innerHTML = `
             <p><strong>📚 Группа:</strong> ${escapeHtml(currentGroupName)}</p>
             <p><strong>👨‍🏫 Куратор:</strong> ${escapeHtml(curator)}</p>
-            <p><strong>🎓 Количество студентов:</strong> <span id="studentCount">загрузка...</span></p>
+            <p><strong>🔗 ID группы:</strong> ${escapeHtml(currentGroupId)}</p>
         `;
         
-        // Загружаем количество студентов
-        try {
-            const studentsRef = collection(db, "groups", currentGroupId, "students");
-            const studentsSnap = await getDocs(studentsRef);
-            document.getElementById("studentCount").innerText = studentsSnap.size;
-        } catch (error) {
-            console.error("Ошибка загрузки студентов:", error);
-            document.getElementById("studentCount").innerText = "?";
-        }
-        
-        // Генерируем QR-код
-        const attendanceUrl = generateQRCode(currentGroupId, currentGroupName);
-        
-        // Сохраняем QR-код в Firebase для статистики
-        await saveQRCodeRecord(currentGroupId, currentGroupName, attendanceUrl);
+        generateQRCode(currentGroupId, currentGroupName);
     };
-    
-    // Сохранение записи о генерации QR-кода
-    async function saveQRCodeRecord(groupId, groupName, qrUrl) {
-        try {
-            const qrRef = doc(db, "qrCodes", `${groupId}_${new Date().toISOString().split('T')[0]}`);
-            await setDoc(qrRef, {
-                groupId: groupId,
-                groupName: groupName,
-                qrUrl: qrUrl,
-                generatedAt: new Date().toISOString(),
-                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 часа
-            });
-        } catch (error) {
-            console.error("Ошибка сохранения QR записи:", error);
-        }
-    }
 
-    // Скачать QR-код
     window.downloadQR = function() {
         const canvas = document.querySelector("#qrcode canvas");
         if (!canvas) {
@@ -671,12 +566,11 @@
         }
         
         const link = document.createElement('a');
-        link.download = `qr_${currentGroupName}_${new Date().toISOString().split('T')[0]}.png`;
+        link.download = `QR_${currentGroupName}_${new Date().toISOString().split('T')[0]}.png`;
         link.href = canvas.toDataURL();
         link.click();
     };
     
-    // Распечатать QR-код
     window.printQR = function() {
         const canvas = document.querySelector("#qrcode canvas");
         if (!canvas) {
@@ -693,50 +587,19 @@
             <head>
                 <title>QR-код для группы ${currentGroupName}</title>
                 <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        min-height: 100vh;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .print-card {
-                        text-align: center;
-                        padding: 30px;
-                    }
-                    .qr-code {
-                        margin: 20px 0;
-                    }
-                    .qr-code canvas {
-                        width: 250px;
-                        height: 250px;
-                    }
-                    .group-info {
-                        margin: 20px 0;
-                    }
-                    @media print {
-                        body {
-                            margin: 0;
-                            padding: 0;
-                        }
-                    }
+                    body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+                    .print-card { text-align: center; padding: 30px; }
+                    .qr-code { margin: 20px 0; }
+                    .qr-code canvas { width: 250px; height: 250px; }
+                    @media print { body { margin: 0; padding: 0; } }
                 </style>
             </head>
             <body>
                 <div class="print-card">
                     <h2>📱 QR-код для отметки посещаемости</h2>
-                    <div class="qr-code">
-                        ${printContent.querySelector('.qr-code-wrapper').innerHTML}
-                    </div>
-                    <div class="group-info">
-                        ${printContent.querySelector('.group-info').innerHTML}
-                    </div>
-                    <p style="margin-top: 30px; font-size: 12px; color: #666;">
-                        Сканируйте QR-код для отметки посещаемости<br>
-                        Сгенерировано: ${new Date().toLocaleString()}
-                    </p>
+                    <div class="qr-code">${printContent.querySelector('.qr-code-wrapper').innerHTML}</div>
+                    <div>${printContent.querySelector('.group-info').innerHTML}</div>
+                    <p style="margin-top: 30px;">Сканируйте QR-код для отметки посещаемости</p>
                 </div>
             </body>
             </html>
@@ -745,7 +608,6 @@
         printWindow.print();
     };
 
-    // Эскейп HTML
     function escapeHtml(str) {
         if (!str) return "";
         return str.replace(/[&<>]/g, function(m) {
@@ -756,12 +618,10 @@
         });
     }
 
-    // Навигация
     window.goBack = function() {
         window.location.href = "panel.html";
     };
 
-    // Тема
     window.toggleTheme = function() {
         const body = document.body;
         body.classList.toggle("dark");
@@ -769,17 +629,12 @@
         localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
     };
 
-    // Загрузка темы
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
         document.body.classList.remove("light");
         document.body.classList.add("dark");
-    } else if (savedTheme === "light") {
-        document.body.classList.remove("dark");
-        document.body.classList.add("light");
     }
 
-    // Инициализация
     window.onload = async function() {
         await loadGroups();
     };
