@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Календарь</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI";
+}
+
+body.light { background:#f5f5f5; color:#000; }
+body.dark { background:#0f0f0f; color:#fff; }
+
+.top-btn {
+    position:absolute;
+    top:10px;
+    padding:8px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.back-btn { left:10px; background:#555; color:#fff; }
+.theme-btn { right:10px; }
+
+.header {
+    text-align:center;
+    padding:20px;
+    font-size:22px;
+}
+
+.calendar {
+    max-width:600px;
+    margin:auto;
+    padding:20px;
+}
+
+.month {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.days {
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:5px;
+    margin-top:10px;
+}
+
+.day {
+    padding:10px;
+    text-align:center;
+    border-radius:8px;
+    cursor:pointer;
+    background:#ddd;
+}
+
+body.dark .day { background:#1c1c1c; }
+
+.day.off {
+    background:#e74c3c !important;
+    color:white;
+}
+
+.day.selected {
+    outline:3px solid #4CAF50;
+}
+
+/* МОДАЛКА */
+.modal {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content {
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    width:250px;
+    text-align:center;
+}
+
+body.dark .modal-content {
+    background:#1f1f1f;
+    color:white;
+}
+
+.modal button {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.work { background:#4CAF50; color:white; }
+.off { background:#e74c3c; color:white; }
+</style>
+</head>
+
+<body class="light">
+
+<button class="top-btn back-btn" onclick="goBack()">← Назад</button>
+<button class="top-btn theme-btn" onclick="toggleTheme()">Тема</button>
+
+<div class="header">КАЛЕНДАРЬ</div>
+
+<div class="calendar">
+    <div class="month">
+        <button onclick="prevMonth()">◀</button>
+        <div id="month"></div>
+        <button onclick="nextMonth()">▶</button>
+    </div>
+
+    <div class="days" id="days"></div>
+</div>
+
+<!-- МОДАЛКА -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h3 id="selectedDateText"></h3>
+        <button class="work" onclick="setWork()">Рабочий день</button>
+        <button class="off" onclick="setOff()">Выходной</button>
+        <button onclick="closeModal()">Отмена</button>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+  authDomain: "agroprombank-637a2.firebaseapp.com",
+  projectId: "agroprombank-637a2",
+  storageBucket: "agroprombank-637a2.firebasestorage.app",
+  messagingSenderId: "16228435746",
+  appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let date = new Date();
+let selectedDate = null;
+
+const daysEl = document.getElementById("days");
+const monthEl = document.getElementById("month");
+
+function formatDate(d) {
+    return d.toISOString().split("T")[0];
+}
+
+async function loadDayStatus(dateStr, el) {
+    const ref = doc(db, "calendar", dateStr);
+    const snap = await getDoc(ref);
+
+    if (snap.exists() && snap.data().type === "off") {
+        el.classList.add("off");
+    }
+}
+
+async function render() {
+    daysEl.innerHTML = "";
+
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    monthEl.textContent = date.toLocaleString("ru", { month:"long", year:"numeric" });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+        daysEl.innerHTML += "<div></div>";
+    }
+
+    for (let i = 1; i <= lastDate; i++) {
+        const d = new Date(year, month, i);
+        const dateStr = formatDate(d);
+
+        const el = document.createElement("div");
+        el.className = "day";
+        el.textContent = i;
+
+        loadDayStatus(dateStr, el);
+
+        el.onclick = () => {
+            selectedDate = dateStr;
+            document.getElementById("modal").style.display = "flex";
+            document.getElementById("selectedDateText").innerText = dateStr;
+        };
+
+        daysEl.appendChild(el);
+    }
+}
+
+window.setOff = async function () {
+    await setDoc(doc(db, "calendar", selectedDate), { type: "off" });
+    closeModal();
+    render();
+};
+
+window.setWork = async function () {
+    await setDoc(doc(db, "calendar", selectedDate), { type: "work" });
+    closeModal();
+    render();
+};
+
+window.closeModal = function () {
+    document.getElementById("modal").style.display = "none";
+};
+
+window.prevMonth = function () {
+    date.setMonth(date.getMonth() - 1);
+    render();
+};
+
+window.nextMonth = function () {
+    date.setMonth(date.getMonth() + 1);
+    render();
+};
+
+window.goBack = function () {
+    window.location.href = "panel.html";
+};
+
+window.toggleTheme = function () {
+    const body = document.body;
+    body.classList.toggle("dark");
+    body.classList.toggle("light");
+    localStorage.setItem("theme", body.className);
+};
+
+window.onload = function () {
+    document.body.className = localStorage.getItem("theme") || "light";
+    render();
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Группы</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI";
+}
+
+body.light { background:#f5f5f5; color:#000; }
+body.dark { background:#0f0f0f; color:#fff; }
+
+.top-btn {
+    position:absolute;
+    top:10px;
+    padding:8px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.back-btn { left:10px; background:#555; color:#fff; }
+.theme-btn { right:10px; }
+
+.header {
+    text-align:center;
+    padding:20px;
+    font-size:22px;
+}
+
+.container {
+    max-width:800px;
+    margin:auto;
+    padding:20px;
+}
+
+/* Кнопка создания группы вверху */
+.create-group-header {
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:20px;
+}
+
+.create-group-btn-header {
+    background:#4CAF50;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.create-group-btn-header:hover {
+    background:#45a049;
+}
+
+.groups-list {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:20px;
+}
+
+.group-card {
+    background:#e0e0e0;
+    padding:15px 20px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.2s;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+body.dark .group-card {
+    background:#1e1e1e;
+}
+
+.group-card:hover {
+    transform:scale(1.01);
+    background:#ccc;
+}
+
+body.dark .group-card:hover {
+    background:#2a2a2a;
+}
+
+.group-name {
+    font-size:18px;
+    font-weight:bold;
+}
+
+.group-info {
+    font-size:14px;
+    opacity:0.8;
+    margin-top:5px;
+}
+
+.student-count {
+    background:#4CAF50;
+    color:white;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:14px;
+}
+
+.empty-state {
+    text-align:center;
+    padding:40px;
+    opacity:0.6;
+}
+
+/* МОДАЛКА */
+.modal {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.modal-content {
+    background:white;
+    border-radius:16px;
+    width:90%;
+    max-width:500px;
+    max-height:80vh;
+    overflow-y:auto;
+    padding:20px;
+}
+
+body.dark .modal-content {
+    background:#1f1f1f;
+    color:white;
+}
+
+.modal-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #ddd;
+    padding-bottom:10px;
+    margin-bottom:15px;
+}
+
+body.dark .modal-header {
+    border-bottom-color:#444;
+}
+
+.close-modal {
+    background:#e74c3c;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:5px 12px;
+    cursor:pointer;
+}
+
+.student-item {
+    padding:10px;
+    border-bottom:1px solid #eee;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+body.dark .student-item {
+    border-bottom-color:#333;
+}
+
+.student-name {
+    font-weight:500;
+}
+
+.student-status {
+    font-size:12px;
+    padding:2px 8px;
+    border-radius:12px;
+}
+
+.status-active {
+    background:#4CAF50;
+    color:white;
+}
+
+.status-inactive {
+    background:#e74c3c;
+    color:white;
+}
+
+.delete-student {
+    background:#e74c3c;
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:4px 10px;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.delete-student:hover {
+    background:#c0392b;
+}
+
+.add-student-btn {
+    margin-top:15px;
+    width:100%;
+    padding:10px;
+    background:#2196F3;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.add-student-btn:hover {
+    background:#0b7dda;
+}
+
+/* Форма добавления группы */
+.form-group {
+    margin-bottom:15px;
+}
+
+.form-group label {
+    display:block;
+    margin-bottom:5px;
+    font-weight:500;
+}
+
+.form-group input {
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    background:white;
+    box-sizing:border-box;
+}
+
+body.dark .form-group input {
+    background:#2a2a2a;
+    border-color:#555;
+    color:white;
+}
+
+.modal-buttons {
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.modal-buttons button {
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.save-btn {
+    background:#4CAF50;
+    color:white;
+}
+
+.save-btn:hover {
+    background:#45a049;
+}
+
+.cancel-btn {
+    background:#999;
+    color:white;
+}
+
+.cancel-btn:hover {
+    background:#777;
+}
+
+.delete-group-btn {
+    background:#e74c3c;
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:10px;
+    width:100%;
+}
+
+.delete-group-btn:hover {
+    background:#c0392b;
+}
+</style>
+</head>
+
+<body class="light">
+
+<button class="top-btn back-btn" onclick="goBack()">← Назад</button>
+<button class="top-btn theme-btn" onclick="toggleTheme()">🌓 Тема</button>
+
+<div class="header">📚 Учебные группы</div>
+
+<div class="container">
+    <div class="create-group-header">
+        <button class="create-group-btn-header" onclick="openAddGroupModal()">
+            ➕ Создать группу
+        </button>
+    </div>
+    
+    <div class="groups-list" id="groupsList"></div>
+</div>
+
+<!-- МОДАЛКА СО СТУДЕНТАМИ -->
+<div class="modal" id="studentsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalGroupTitle"></h3>
+            <button class="close-modal" onclick="closeStudentsModal()">✕</button>
+        </div>
+        <div id="studentsList"></div>
+        <button class="add-student-btn" onclick="openAddStudentModal()">+ Добавить студента</button>
+        <button class="delete-group-btn" onclick="deleteCurrentGroup()">🗑 Удалить группу</button>
+    </div>
+</div>
+
+<!-- МОДАЛКА ДОБАВЛЕНИЯ/РЕДАКТИРОВАНИЯ ГРУППЫ -->
+<div class="modal" id="addGroupModal">
+    <div class="modal-content">
+        <h3 id="groupModalTitle">Создать новую группу</h3>
+        <div class="form-group">
+            <label>Название группы *</label>
+            <input type="text" id="newGroupName" placeholder="Например: БД-111">
+        </div>
+        <div class="form-group">
+            <label>Куратор</label>
+            <input type="text" id="newGroupCurator" placeholder="ФИО куратора">
+        </div>
+        <div class="modal-buttons">
+            <button class="save-btn" onclick="saveNewGroup()">Сохранить</button>
+            <button class="cancel-btn" onclick="closeAddGroupModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛКА ДОБАВЛЕНИЯ СТУДЕНТА -->
+<div class="modal" id="addStudentModal">
+    <div class="modal-content">
+        <h3>Добавить студента</h3>
+        <div class="form-group">
+            <label>ФИО студента *</label>
+            <input type="text" id="newStudentName" placeholder="Иванов Иван Иванович">
+        </div>
+        <div class="modal-buttons">
+            <button class="save-btn" onclick="saveNewStudent()">Добавить</button>
+            <button class="cancel-btn" onclick="closeAddStudentModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+  authDomain: "agroprombank-637a2.firebaseapp.com",
+  projectId: "agroprombank-637a2",
+  storageBucket: "agroprombank-637a2.firebasestorage.app",
+  messagingSenderId: "16228435746",
+  appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Глобальные переменные
+let currentGroupId = null;
+let currentGroupName = null;
+
+// ========== ЗАГРУЗКА ГРУПП ==========
+async function loadGroups() {
+    const groupsList = document.getElementById("groupsList");
+    groupsList.innerHTML = '<div class="empty-state">⏳ Загрузка...</div>';
+    
+    try {
+        const querySnapshot = await getDocs(collection(db, "groups"));
+        const groups = [];
+        querySnapshot.forEach(doc => {
+            groups.push({ id: doc.id, ...doc.data() });
+        });
+        
+        if (groups.length === 0) {
+            groupsList.innerHTML = '<div class="empty-state">📭 Нет групп. Нажмите "Создать группу"</div>';
+            return;
+        }
+        
+        groupsList.innerHTML = "";
+        for (const group of groups) {
+            // Получаем количество студентов
+            const studentsRef = collection(db, "groups", group.id, "students");
+            const studentsSnap = await getDocs(studentsRef);
+            const studentCount = studentsSnap.size;
+            
+            const card = document.createElement("div");
+            card.className = "group-card";
+            card.innerHTML = `
+                <div>
+                    <div class="group-name">📖 ${escapeHtml(group.name)}</div>
+                    <div class="group-info">👨‍🏫 Куратор: ${escapeHtml(group.curator || "не назначен")}</div>
+                </div>
+                <div class="student-count">👥 ${studentCount} чел.</div>
+            `;
+            card.onclick = () => openGroupStudents(group.id, group.name);
+            groupsList.appendChild(card);
+        }
+    } catch (error) {
+        console.error("Ошибка загрузки групп:", error);
+        groupsList.innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
+    }
+}
+
+// ========== ОТКРЫТЬ СПИСОК СТУДЕНТОВ ГРУППЫ ==========
+window.openGroupStudents = async function(groupId, groupName) {
+    currentGroupId = groupId;
+    currentGroupName = groupName;
+    document.getElementById("modalGroupTitle").innerText = groupName;
+    
+    const studentsList = document.getElementById("studentsList");
+    studentsList.innerHTML = '<div class="empty-state">⏳ Загрузка...</div>';
+    document.getElementById("studentsModal").style.display = "flex";
+    
+    try {
+        const studentsRef = collection(db, "groups", groupId, "students");
+        const studentsSnap = await getDocs(studentsRef);
+        const students = [];
+        studentsSnap.forEach(doc => {
+            students.push({ id: doc.id, ...doc.data() });
+        });
+        
+        if (students.length === 0) {
+            studentsList.innerHTML = '<div class="empty-state">📭 Нет студентов. Добавьте первого</div>';
+            return;
+        }
+        
+        studentsList.innerHTML = "";
+        students.forEach(student => {
+            const studentDiv = document.createElement("div");
+            studentDiv.className = "student-item";
+            studentDiv.innerHTML = `
+                <span class="student-name">👨‍🎓 ${escapeHtml(student.name)}</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span class="student-status ${student.active !== false ? 'status-active' : 'status-inactive'}">
+                        ${student.active !== false ? "активен" : "неактивен"}
+                    </span>
+                    <button class="delete-student" onclick="deleteStudent('${groupId}','${student.id}')">🗑</button>
+                </div>
+            `;
+            studentsList.appendChild(studentDiv);
+        });
+    } catch (error) {
+        console.error("Ошибка загрузки студентов:", error);
+        studentsList.innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
+    }
+};
+
+// ========== УДАЛЕНИЕ СТУДЕНТА ==========
+window.deleteStudent = async function(groupId, studentId) {
+    if (confirm("Удалить студента?")) {
+        try {
+            await deleteDoc(doc(db, "groups", groupId, "students", studentId));
+            await openGroupStudents(groupId, currentGroupName);
+            await loadGroups(); // Обновляем счетчик студентов
+        } catch (error) {
+            console.error("Ошибка удаления:", error);
+            alert("Ошибка при удалении");
+        }
+    }
+};
+
+// ========== УДАЛЕНИЕ ГРУППЫ ==========
+window.deleteCurrentGroup = async function() {
+    if (!currentGroupId) return;
+    
+    if (confirm(`Удалить группу "${currentGroupName}" и всех студентов? Это действие нельзя отменить.`)) {
+        try {
+            // Сначала удаляем всех студентов
+            const studentsRef = collection(db, "groups", currentGroupId, "students");
+            const studentsSnap = await getDocs(studentsRef);
+            for (const studentDoc of studentsSnap.docs) {
+                await deleteDoc(doc(db, "groups", currentGroupId, "students", studentDoc.id));
+            }
+            
+            // Удаляем саму группу
+            await deleteDoc(doc(db, "groups", currentGroupId));
+            
+            closeStudentsModal();
+            await loadGroups();
+        } catch (error) {
+            console.error("Ошибка удаления группы:", error);
+            alert("Ошибка при удалении группы");
+        }
+    }
+};
+
+// ========== ДОБАВЛЕНИЕ ГРУППЫ ==========
+window.openAddGroupModal = function() {
+    document.getElementById("groupModalTitle").innerText = "Создать новую группу";
+    document.getElementById("newGroupName").value = "";
+    document.getElementById("newGroupCurator").value = "";
+    document.getElementById("addGroupModal").style.display = "flex";
+};
+
+window.closeAddGroupModal = function() {
+    document.getElementById("addGroupModal").style.display = "none";
+};
+
+window.saveNewGroup = async function() {
+    const name = document.getElementById("newGroupName").value.trim();
+    const curator = document.getElementById("newGroupCurator").value.trim();
+    
+    if (!name) {
+        alert("Введите название группы");
+        return;
+    }
+    
+    try {
+        const groupId = "group_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+        await setDoc(doc(db, "groups", groupId), {
+            name: name,
+            curator: curator || "",
+            createdAt: new Date().toISOString()
+        });
+        closeAddGroupModal();
+        await loadGroups();
+    } catch (error) {
+        console.error("Ошибка добавления группы:", error);
+        alert("Ошибка при добавлении группы");
+    }
+};
+
+// ========== ДОБАВЛЕНИЕ СТУДЕНТА ==========
+window.openAddStudentModal = function() {
+    if (!currentGroupId) {
+        alert("Группа не выбрана");
+        return;
+    }
+    document.getElementById("addStudentModal").style.display = "flex";
+    document.getElementById("newStudentName").value = "";
+};
+
+window.closeAddStudentModal = function() {
+    document.getElementById("addStudentModal").style.display = "none";
+};
+
+window.saveNewStudent = async function() {
+    const name = document.getElementById("newStudentName").value.trim();
+    
+    if (!name) {
+        alert("Введите ФИО студента");
+        return;
+    }
+    
+    if (!currentGroupId) return;
+    
+    try {
+        const studentId = Date.now().toString();
+        await setDoc(doc(db, "groups", currentGroupId, "students", studentId), {
+            name: name,
+            active: true,
+            addedAt: new Date().toISOString()
+        });
+        closeAddStudentModal();
+        // Обновляем список студентов в открытой модалке
+        await openGroupStudents(currentGroupId, currentGroupName);
+        // Обновляем список групп (чтобы обновилось кол-во студентов)
+        await loadGroups();
+    } catch (error) {
+        console.error("Ошибка добавления студента:", error);
+        alert("Ошибка при добавлении студента");
+    }
+};
+
+// ========== ЗАКРЫТИЕ МОДАЛОК ==========
+window.closeStudentsModal = function() {
+    document.getElementById("studentsModal").style.display = "none";
+    currentGroupId = null;
+    currentGroupName = null;
+};
+
+// Закрытие модалок при клике вне области
+window.onclick = function(event) {
+    const modals = ["studentsModal", "addGroupModal", "addStudentModal"];
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target === modal) {
+            modal.style.display = "none";
+            if (modalId === "studentsModal") {
+                currentGroupId = null;
+                currentGroupName = null;
+            }
+        }
+    });
+};
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+window.goBack = function() {
+    window.location.href = "panel.html";
+};
+
+window.toggleTheme = function() {
+    const body = document.body;
+    body.classList.toggle("dark");
+    body.classList.toggle("light");
+    localStorage.setItem("theme", body.className);
+};
+
+// Инициализация
+window.onload = function() {
+    document.body.className = localStorage.getItem("theme") || "light";
+    loadGroups();
+};
+</script>
+
+</body>
+</html>

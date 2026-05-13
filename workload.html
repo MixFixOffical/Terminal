@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.85">
+    <title>Нагрузка | Техникум</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1a1a2e;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Шапка */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        body.light .top-bar {
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        body.dark .top-bar {
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        body.light .logo {
+            color: #4CAF50;
+        }
+
+        body.dark .logo {
+            color: #ffd700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        body.light .back-btn {
+            background: #555;
+            color: white;
+        }
+
+        body.dark .back-btn {
+            background: #333;
+            color: #ffd700;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        body.light .theme-toggle {
+            background: #1a1a2e;
+            color: #ffd700;
+        }
+
+        body.dark .theme-toggle {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        /* Хедер */
+        .hero {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        body.light .hero h1 {
+            background: linear-gradient(135deg, #1a1a2e, #4CAF50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        body.dark .hero h1 {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .divider {
+            width: 80px;
+            height: 3px;
+            margin: 15px auto;
+            border-radius: 3px;
+        }
+
+        body.light .divider {
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+        }
+
+        body.dark .divider {
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
+        }
+
+        /* Основной контент */
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 30px;
+        }
+
+        /* Выбор группы */
+        .group-selector {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .selector-label {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .group-select {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 2px solid #ddd;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        body.dark .group-select {
+            background: #2a2a3a;
+            border-color: #444;
+            color: white;
+        }
+
+        .group-select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        body.dark .group-select:focus {
+            border-color: #ffd700;
+        }
+
+        /* Таблица расписания */
+        .schedule-table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 12px 8px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        body.dark .schedule-table th,
+        body.dark .schedule-table td {
+            border-color: #444;
+        }
+
+        .schedule-table th {
+            background: rgba(76, 175, 80, 0.15);
+            font-weight: 600;
+            font-size: 15px;
+            position: sticky;
+            top: 0;
+        }
+
+        body.dark .schedule-table th {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .subject-name {
+            font-weight: 600;
+            text-align: left;
+            min-width: 180px;
+        }
+
+        body.light .subject-name {
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        body.dark .subject-name {
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        /* Пары (уроки) */
+        .lesson-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .lesson-slot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lesson-slot.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        body.dark .lesson-slot.active {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        .lesson-slot.inactive {
+            background: #e0e0e0;
+            color: #999;
+        }
+
+        body.dark .lesson-slot.inactive {
+            background: #2a2a3a;
+            color: #666;
+        }
+
+        .lesson-slot:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Кнопки действий */
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .save-btn, .reset-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: #ff9800;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #e68900;
+            transform: translateY(-2px);
+        }
+
+        body.dark .save-btn {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        body.dark .reset-btn {
+            background: #ff8c00;
+            color: white;
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.6;
+            font-size: 16px;
+        }
+
+        /* Легенда */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 16px;
+            flex-wrap: wrap;
+        }
+
+        body.light .legend {
+            background: rgba(255,255,255,0.7);
+        }
+
+        body.dark .legend {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+        }
+
+        .legend-color.active {
+            background: #4CAF50;
+        }
+
+        body.dark .legend-color.active {
+            background: #ffd700;
+        }
+
+        .legend-color.inactive {
+            background: #e0e0e0;
+        }
+
+        body.dark .legend-color.inactive {
+            background: #2a2a3a;
+        }
+
+        /* Футер */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .lesson-slot {
+                width: 28px;
+                height: 28px;
+                font-size: 11px;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px 4px;
+            }
+            
+            .subject-name {
+                min-width: 120px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body class="light">
+
+<div class="container">
+    <div class="top-bar">
+        <div class="logo">🏫 Техникум Управления</div>
+        <div class="nav-buttons">
+            <button class="back-btn" onclick="goBack()">← Назад</button>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>⚖️ НАГРУЗКА</h1>
+        <div class="divider"></div>
+        <p>Распределение учебной нагрузки по группам</p>
+    </div>
+
+    <div class="content">
+        <div class="group-selector">
+            <label class="selector-label">📚 Выберите группу:</label>
+            <select class="group-select" id="groupSelect" onchange="onGroupChange()">
+                <option value="">-- Выберите группу --</option>
+            </select>
+        </div>
+
+        <div id="scheduleContainer">
+            <div class="empty-state">📭 Выберите группу для просмотра нагрузки</div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color active"></div>
+                <span>Пара есть</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color inactive"></div>
+                <span>Нет пары</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50; border-radius: 8px;"></div>
+                <span>Кликните по ячейке, чтобы добавить/удалить пару</span>
+            </div>
+        </div>
+
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+            <button class="save-btn" onclick="saveWorkload()">💾 Сохранить нагрузку</button>
+            <button class="reset-btn" onclick="resetChanges()">🔄 Сбросить изменения</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Техникум Управления | Электронная система учета</p>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+        authDomain: "agroprombank-637a2.firebaseapp.com",
+        projectId: "agroprombank-637a2",
+        storageBucket: "agroprombank-637a2.firebasestorage.app",
+        messagingSenderId: "16228435746",
+        appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Дни недели
+    const daysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const maxLessons = 6; // максимум 6 пар в день
+
+    let groupsList = [];
+    let subjectsList = [];
+    let currentWorkload = {}; // { subjectId: { dayIndex: [lessonNumbers] } }
+    let originalWorkload = {};
+    let currentGroupId = null;
+
+    // Загрузка групп
+    async function loadGroups() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "groups"));
+            groupsList = [];
+            querySnapshot.forEach(doc => {
+                groupsList.push({ id: doc.id, ...doc.data() });
+            });
+            
+            const groupSelect = document.getElementById("groupSelect");
+            groupSelect.innerHTML = '<option value="">-- Выберите группу --</option>';
+            groupsList.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            groupsList.forEach(group => {
+                const option = document.createElement("option");
+                option.value = group.id;
+                option.textContent = `${group.name} ${group.curator ? "(куратор: " + group.curator + ")" : ""}`;
+                groupSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки групп:", error);
+        }
+    }
+
+    // Загрузка предметов
+    async function loadSubjects() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "subjects"));
+            subjectsList = [];
+            querySnapshot.forEach(doc => {
+                subjectsList.push({ id: doc.id, ...doc.data() });
+            });
+            subjectsList.sort((a, b) => (a.name || "").localeCompare(b.name || "", 'ru'));
+        } catch (error) {
+            console.error("Ошибка загрузки предметов:", error);
+        }
+    }
+
+    // Загрузка нагрузки для группы
+    async function loadWorkload(groupId) {
+        try {
+            const workloadRef = doc(db, "workload", groupId);
+            const workloadSnap = await getDoc(workloadRef);
+            
+            if (workloadSnap.exists()) {
+                currentWorkload = workloadSnap.data().subjects || {};
+            } else {
+                currentWorkload = {};
+            }
+            
+            // Создаем копию для отслеживания изменений
+            originalWorkload = JSON.parse(JSON.stringify(currentWorkload));
+        } catch (error) {
+            console.error("Ошибка загрузки нагрузки:", error);
+            currentWorkload = {};
+        }
+    }
+
+    // Сохранение нагрузки
+    window.saveWorkload = async function() {
+        if (!currentGroupId) return;
+        
+        try {
+            await setDoc(doc(db, "workload", currentGroupId), {
+                subjects: currentWorkload,
+                updatedAt: new Date().toISOString(),
+                groupId: currentGroupId
+            });
+            originalWorkload = JSON.parse(JSON.stringify(currentWorkload));
+            alert("Нагрузка успешно сохранена!");
+        } catch (error) {
+            console.error("Ошибка сохранения:", error);
+            alert("Ошибка при сохранении нагрузки");
+        }
+    };
+
+    // Сброс изменений
+    window.resetChanges = function() {
+        if (confirm("Сбросить все несохраненные изменения?")) {
+            currentWorkload = JSON.parse(JSON.stringify(originalWorkload));
+            renderSchedule();
+        }
+    };
+
+    // Переключение пары
+    window.toggleLesson = function(subjectId, dayIndex, lessonNumber) {
+        if (!currentWorkload[subjectId]) {
+            currentWorkload[subjectId] = {};
+        }
+        if (!currentWorkload[subjectId][dayIndex]) {
+            currentWorkload[subjectId][dayIndex] = [];
+        }
+        
+        const lessons = currentWorkload[subjectId][dayIndex];
+        const index = lessons.indexOf(lessonNumber);
+        
+        if (index === -1) {
+            lessons.push(lessonNumber);
+            lessons.sort((a, b) => a - b);
+        } else {
+            lessons.splice(index, 1);
+        }
+        
+        renderSchedule();
+    };
+
+    // Проверка, есть ли пара
+    function hasLesson(subjectId, dayIndex, lessonNumber) {
+        return currentWorkload[subjectId] && 
+               currentWorkload[subjectId][dayIndex] && 
+               currentWorkload[subjectId][dayIndex].includes(lessonNumber);
+    }
+
+    // Подсчет количества пар по предмету в день
+    function getLessonCount(subjectId, dayIndex) {
+        if (!currentWorkload[subjectId] || !currentWorkload[subjectId][dayIndex]) {
+            return 0;
+        }
+        return currentWorkload[subjectId][dayIndex].length;
+    }
+
+    // Рендер расписания
+    function renderSchedule() {
+        const container = document.getElementById("scheduleContainer");
+        
+        if (!currentGroupId || subjectsList.length === 0) {
+            container.innerHTML = '<div class="empty-state">📭 Выберите группу для просмотра нагрузки</div>';
+            document.getElementById("actionButtons").style.display = "none";
+            return;
+        }
+        
+        if (subjectsList.length === 0) {
+            container.innerHTML = '<div class="empty-state">📭 Нет предметов. Сначала добавьте предметы в разделе "Предметы"</div>';
+            document.getElementById("actionButtons").style.display = "none";
+            return;
+        }
+        
+        document.getElementById("actionButtons").style.display = "flex";
+        
+        let html = '<div class="schedule-table-wrapper"><table class="schedule-table">';
+        html += '<thead><tr><th>Предмет</th>';
+        
+        for (let day of daysOfWeek) {
+            html += `<th>${day}</th>`;
+        }
+        html += '</tr></thead><tbody>';
+        
+        for (let subject of subjectsList) {
+            html += '<tr>';
+            html += `<td class="subject-name">📖 ${escapeHtml(subject.name)}<br><small style="font-size:11px;opacity:0.7;">${subject.code || ''}</small></td>`;
+            
+            for (let dayIndex = 0; dayIndex < daysOfWeek.length; dayIndex++) {
+                const lessonCount = getLessonCount(subject.id, dayIndex);
+                html += '<td>';
+                html += '<div class="lesson-slots">';
+                
+                for (let lessonNum = 1; lessonNum <= maxLessons; lessonNum++) {
+                    const isActive = hasLesson(subject.id, dayIndex, lessonNum);
+                    html += `<div class="lesson-slot ${isActive ? 'active' : 'inactive'}" 
+                                   onclick="toggleLesson('${subject.id}', ${dayIndex}, ${lessonNum})">
+                                ${lessonNum}
+                            </div>`;
+                }
+                
+                html += '</div>';
+                if (lessonCount > 0) {
+                    html += `<div style="font-size:11px;margin-top:5px;opacity:0.7;">${lessonCount} пар(а)</div>`;
+                }
+                html += '</td>';
+            }
+            html += '</tr>';
+        }
+        
+        html += '</tbody></table></div>';
+        
+        // Добавляем итоговую строку
+        html += '<div style="margin-top:20px;padding:15px;border-radius:16px;text-align:center;">';
+        html += '<strong>📊 Итого по всем предметам:</strong><br>';
+        
+        const totalLessons = calculateTotalLessons();
+        html += `<span style="font-size:24px;font-weight:bold;color:#4CAF50;">${totalLessons}</span> пар в неделю`;
+        if (totalLessons > 36) {
+            html += '<div style="color:#ff9800;margin-top:5px;">⚠️ Превышение максимальной нагрузки (рекомендуется до 36 пар в неделю)</div>';
+        } else if (totalLessons < 30 && totalLessons > 0) {
+            html += '<div style="color:#2196F3;margin-top:5px;">ℹ️ Недельная нагрузка ниже рекомендуемой</div>';
+        }
+        
+        html += '</div>';
+        
+        container.innerHTML = html;
+    }
+    
+    // Подсчет всех пар в неделю
+    function calculateTotalLessons() {
+        let total = 0;
+        for (let subjectId in currentWorkload) {
+            for (let dayIndex in currentWorkload[subjectId]) {
+                total += currentWorkload[subjectId][dayIndex].length;
+            }
+        }
+        return total;
+    }
+
+    // При изменении группы
+    window.onGroupChange = async function() {
+        const groupSelect = document.getElementById("groupSelect");
+        currentGroupId = groupSelect.value;
+        
+        if (currentGroupId) {
+            await loadWorkload(currentGroupId);
+            renderSchedule();
+        } else {
+            document.getElementById("scheduleContainer").innerHTML = '<div class="empty-state">📭 Выберите группу для просмотра нагрузки</div>';
+            document.getElementById("actionButtons").style.display = "none";
+        }
+    };
+
+    // Эскейп HTML
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Навигация
+    window.goBack = function() {
+        window.location.href = "schedule.html";
+    };
+
+    // Тема
+    window.toggleTheme = function() {
+        const body = document.body;
+        body.classList.toggle("dark");
+        body.classList.toggle("light");
+        localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+    };
+
+    // Загрузка темы
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+        document.body.classList.remove("light");
+        document.body.classList.add("dark");
+    } else if (savedTheme === "light") {
+        document.body.classList.remove("dark");
+        document.body.classList.add("light");
+    }
+
+    // Инициализация
+    window.onload = async function() {
+        await loadGroups();
+        await loadSubjects();
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Отметка посещаемости | Техникум</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1a1a2e;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+        }
+
+        /* Контейнер */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Карточка */
+        .card {
+            max-width: 500px;
+            width: 100%;
+            border-radius: 32px;
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.5s ease;
+        }
+
+        body.light .card {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        body.dark .card {
+            background: rgba(30,30,50,0.95);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка карточки */
+        .card-header {
+            text-align: center;
+            padding: 30px 30px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        body.dark .card-header {
+            border-bottom-color: rgba(255,255,255,0.1);
+        }
+
+        .logo-icon {
+            font-size: 64px;
+            margin-bottom: 10px;
+        }
+
+        .card-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        body.light .card-header h1 {
+            color: #4CAF50;
+        }
+
+        body.dark .card-header h1 {
+            color: #ffd700;
+        }
+
+        .card-header p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Тело карточки */
+        .card-body {
+            padding: 30px;
+        }
+
+        /* Информация о группе и времени */
+        .info-panel {
+            background: rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        body.dark .info-panel {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .time-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        body.light .time-value {
+            color: #4CAF50;
+        }
+
+        body.dark .time-value {
+            color: #ffd700;
+        }
+
+        /* Предмет */
+        .subject-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: white;
+        }
+
+        body.dark .subject-card {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            color: #1a1a2e;
+        }
+
+        .subject-name {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subject-time {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .status-on-time {
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+        }
+
+        .status-late {
+            background: rgba(255, 152, 0, 0.9);
+            color: white;
+        }
+
+        .status-missed {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+        }
+
+        /* Выбор студента */
+        .student-select {
+            margin-bottom: 25px;
+        }
+
+        .student-select label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .student-search {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 2px solid #ddd;
+            font-size: 16px;
+            transition: 0.3s;
+            background: white;
+        }
+
+        body.dark .student-search {
+            background: #2a2a3a;
+            border-color: #444;
+            color: white;
+        }
+
+        .student-search:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        body.dark .student-search:focus {
+            border-color: #ffd700;
+        }
+
+        .student-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border-radius: 14px;
+            background: rgba(0,0,0,0.03);
+        }
+
+        body.dark .student-list {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .student-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        body.dark .student-option {
+            border-bottom-color: rgba(255,255,255,0.05);
+        }
+
+        .student-option:hover {
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .student-option.selected {
+            background: rgba(76, 175, 80, 0.2);
+            font-weight: 600;
+        }
+
+        body.dark .student-option.selected {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        /* Кнопка отметки */
+        .mark-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #4CAF50;
+            color: white;
+        }
+
+        .mark-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+        }
+
+        .mark-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        body.dark .mark-btn:disabled {
+            background: #444;
+        }
+
+        /* Сообщение об отметке */
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 14px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+            display: block;
+        }
+
+        .message.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            display: block;
+        }
+
+        .message.warning {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid #ff9800;
+            color: #ff9800;
+            display: block;
+        }
+
+        /* Уже отмечено */
+        .already-marked {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .already-marked .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* Скрытые элементы */
+        .hidden {
+            display: none;
+        }
+
+        /* Анимация загрузки */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(76,175,80,0.2);
+            border-top-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Текущее время */
+        .current-time {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .date {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body class="light">
+
+<div class="container">
+    <div class="card" id="mainCard">
+        <div class="card-header">
+            <div class="logo-icon">📱</div>
+            <h1>Отметка посещаемости</h1>
+            <p>Сканируйте QR-код для отметки</p>
+        </div>
+
+        <div class="card-body" id="cardBody">
+            <!-- Контент будет загружаться динамически -->
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка данных...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, updateDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+        authDomain: "agroprombank-637a2.firebaseapp.com",
+        projectId: "agroprombank-637a2",
+        storageBucket: "agroprombank-637a2.firebasestorage.app",
+        messagingSenderId: "16228435746",
+        appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Получаем параметры из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const groupId = urlParams.get('group');
+    const groupName = urlParams.get('groupName');
+
+    let studentsList = [];
+    let selectedStudent = null;
+    let currentSubject = null;
+    let currentSchedule = null;
+    let isAlreadyMarked = false;
+    let lateMinutes = 0;
+
+    // Дни недели
+    const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+    // Загрузка страницы
+    async function init() {
+        const cardBody = document.getElementById("cardBody");
+        
+        if (!groupId) {
+            cardBody.innerHTML = `
+                <div class="already-marked">
+                    <div class="icon">❌</div>
+                    <h3>Ошибка</h3>
+                    <p>Не указана группа. QR-код некорректен.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Загружаем расписание звонков
+        await loadBellSchedule();
+        
+        // Загружаем расписание группы (нагрузку)
+        await loadGroupSchedule();
+        
+        // Загружаем студентов
+        await loadStudents();
+        
+        // Проверяем, отмечался ли уже студент сегодня
+        // Будет проверено при выборе студента
+        
+        renderInterface();
+        
+        // Обновляем время каждую секунду
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+    }
+
+    // Загрузка расписания звонков
+    async function loadBellSchedule() {
+        try {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 1-6 понедельник-суббота
+            const shift = today.getHours() < 14 ? 'first' : 'second'; // простая логика
+            
+            const q = query(collection(db, "bellSchedule"), where("shift", "==", shift));
+            const querySnapshot = await getDocs(q);
+            
+            currentSchedule = [];
+            querySnapshot.forEach(doc => {
+                currentSchedule.push({ id: doc.id, ...doc.data() });
+            });
+            currentSchedule.sort((a, b) => a.lessonNumber - b.lessonNumber);
+        } catch (error) {
+            console.error("Ошибка загрузки расписания звонков:", error);
+        }
+    }
+
+    // Загрузка расписания группы (нагрузка)
+    async function loadGroupSchedule() {
+        try {
+            const workloadRef = doc(db, "workload", groupId);
+            const workloadSnap = await getDoc(workloadRef);
+            
+            if (workloadSnap.exists()) {
+                const workload = workloadSnap.data().subjects || {};
+                const today = new Date();
+                const dayIndex = today.getDay(); // 0-6, где 0 воскресенье
+                
+                if (dayIndex >= 1 && dayIndex <= 6) {
+                    const currentHour = today.getHours();
+                    const currentMinute = today.getMinutes();
+                    const currentTimeMinutes = currentHour * 60 + currentMinute;
+                    
+                    // Ищем текущий урок
+                    for (const [subjectId, days] of Object.entries(workload)) {
+                        const lessons = days[dayIndex - 1]; // dayIndex 1-6 -> 0-5
+                        if (lessons && lessons.length > 0) {
+                            // Получаем информацию о предмете
+                            const subjectRef = doc(db, "subjects", subjectId);
+                            const subjectSnap = await getDoc(subjectRef);
+                            
+                            if (subjectSnap.exists()) {
+                                const subject = subjectSnap.data();
+                                
+                                // Находим какой сейчас урок по времени
+                                for (const lessonNum of lessons) {
+                                    const bell = currentSchedule.find(b => b.lessonNumber === lessonNum);
+                                    if (bell) {
+                                        const [startHour, startMinute] = bell.startTime.split(':').map(Number);
+                                        const [endHour, endMinute] = bell.endTime.split(':').map(Number);
+                                        const startMinutes = startHour * 60 + startMinute;
+                                        const endMinutes = endHour * 60 + endMinute;
+                                        
+                                        // Если текущее время в пределах урока или урок уже начался
+                                        if (currentTimeMinutes >= startMinutes - 15 && currentTimeMinutes <= endMinutes + 30) {
+                                            currentSubject = {
+                                                id: subjectId,
+                                                name: subject.name,
+                                                lessonNumber: lessonNum,
+                                                startTime: bell.startTime,
+                                                endTime: bell.endTime,
+                                                startMinutes: startMinutes,
+                                                endMinutes: endMinutes
+                                            };
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (currentSubject) break;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки расписания группы:", error);
+        }
+    }
+
+    // Загрузка студентов группы
+    async function loadStudents() {
+        try {
+            const studentsRef = collection(db, "groups", groupId, "students");
+            const querySnapshot = await getDocs(studentsRef);
+            studentsList = [];
+            querySnapshot.forEach(doc => {
+                studentsList.push({ id: doc.id, ...doc.data() });
+            });
+            studentsList.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+        } catch (error) {
+            console.error("Ошибка загрузки студентов:", error);
+        }
+    }
+
+    // Проверка, отмечался ли студент сегодня
+    async function checkAlreadyMarked(studentId) {
+        const today = new Date().toISOString().split('T')[0];
+        const attendanceRef = doc(db, "attendance", `${studentId}_${today}`);
+        const attendanceSnap = await getDoc(attendanceRef);
+        return attendanceSnap.exists();
+    }
+
+    // Расчет опоздания
+    function calculateLate() {
+        if (!currentSubject) return 0;
+        
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        if (currentMinutes > currentSubject.endMinutes) {
+            return currentMinutes - currentSubject.endMinutes;
+        } else if (currentMinutes > currentSubject.startMinutes) {
+            return currentMinutes - currentSubject.startMinutes;
+        }
+        return 0;
+    }
+
+    // Обновление текущего времени
+    function updateCurrentTime() {
+        const timeElement = document.getElementById("currentTimeValue");
+        const dateElement = document.getElementById("currentDateValue");
+        
+        if (timeElement) {
+            const now = new Date();
+            timeElement.textContent = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        if (dateElement) {
+            const now = new Date();
+            dateElement.textContent = now.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+    }
+
+    // Получить статус посещения
+    function getAttendanceStatus() {
+        if (!currentSubject) return { status: 'unknown', text: 'Нет расписания' };
+        
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        if (currentMinutes < currentSubject.startMinutes - 15) {
+            return { status: 'future', text: 'Урок еще не начался', color: '#ff9800' };
+        } else if (currentMinutes <= currentSubject.startMinutes + 10) {
+            return { status: 'on_time', text: '✅ Вовремя', color: '#4CAF50' };
+        } else if (currentMinutes <= currentSubject.endMinutes) {
+            const late = currentMinutes - currentSubject.startMinutes;
+            return { status: 'late', text: `⚠️ Опоздание на ${late} мин`, color: '#ff9800' };
+        } else if (currentMinutes <= currentSubject.endMinutes + 30) {
+            const late = currentMinutes - currentSubject.startMinutes;
+            return { status: 'very_late', text: `⚠️ Сильное опоздание на ${late} мин`, color: '#e74c3c' };
+        } else {
+            return { status: 'missed', text: '❌ Урок пропущен', color: '#e74c3c' };
+        }
+    }
+
+    // Отметка посещаемости
+    async function markAttendance() {
+        if (!selectedStudent) {
+            showMessage('Выберите студента', 'warning');
+            return;
+        }
+        
+        if (isAlreadyMarked) {
+            showMessage('Вы уже отметили посещаемость сегодня!', 'warning');
+            return;
+        }
+        
+        const markBtn = document.getElementById("markBtn");
+        markBtn.disabled = true;
+        markBtn.textContent = "Сохранение...";
+        
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const attendanceId = `${selectedStudent.id}_${today}`;
+            
+            const status = getAttendanceStatus();
+            const lateMinutes = status.status === 'late' || status.status === 'very_late' ? 
+                now.getMinutes() - currentSubject.startMinutes : 0;
+            
+            const attendanceData = {
+                studentId: selectedStudent.id,
+                studentName: selectedStudent.name,
+                groupId: groupId,
+                groupName: groupName,
+                date: today,
+                timestamp: now.toISOString(),
+                time: now.toLocaleTimeString('ru'),
+                subjectId: currentSubject?.id || null,
+                subjectName: currentSubject?.name || null,
+                lessonNumber: currentSubject?.lessonNumber || null,
+                status: status.status,
+                lateMinutes: lateMinutes,
+                lessonStartTime: currentSubject?.startTime || null,
+                lessonEndTime: currentSubject?.endTime || null
+            };
+            
+            await setDoc(doc(db, "attendance", attendanceId), attendanceData);
+            
+            isAlreadyMarked = true;
+            showMessage(`✅ Отмечено! ${status.text}`, 'success');
+            renderInterface();
+        } catch (error) {
+            console.error("Ошибка отметки:", error);
+            showMessage('Ошибка при отметке. Попробуйте снова.', 'error');
+        } finally {
+            markBtn.disabled = false;
+            markBtn.textContent = "✅ Отметить посещаемость";
+        }
+    }
+
+    // Выбор студента
+    window.selectStudent = function(studentId) {
+        selectedStudent = studentsList.find(s => s.id === studentId);
+        
+        // Обновляем стили
+        document.querySelectorAll('.student-option').forEach(el => {
+            el.classList.remove('selected');
+            if (el.dataset.id === studentId) {
+                el.classList.add('selected');
+            }
+        });
+        
+        // Проверяем, отмечался ли уже
+        checkAlreadyMarked(studentId).then(marked => {
+            isAlreadyMarked = marked;
+            renderInterface();
+        });
+    };
+
+    // Поиск студентов
+    window.searchStudents = function() {
+        const searchTerm = document.getElementById("studentSearch").value.toLowerCase();
+        const listDiv = document.getElementById("studentList");
+        
+        const filtered = studentsList.filter(s => s.name.toLowerCase().includes(searchTerm));
+        
+        if (filtered.length === 0) {
+            listDiv.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.6;">Студент не найден</div>';
+            return;
+        }
+        
+        listDiv.innerHTML = filtered.map(student => `
+            <div class="student-option ${selectedStudent?.id === student.id ? 'selected' : ''}" 
+                 data-id="${student.id}" 
+                 onclick="selectStudent('${student.id}')">
+                👨‍🎓 ${escapeHtml(student.name)}
+            </div>
+        `).join('');
+    };
+
+    // Рендер интерфейса
+    function renderInterface() {
+        const cardBody = document.getElementById("cardBody");
+        const status = getAttendanceStatus();
+        
+        if (isAlreadyMarked && selectedStudent) {
+            cardBody.innerHTML = `
+                <div class="already-marked">
+                    <div class="icon">✅</div>
+                    <h3>Посещаемость отмечена!</h3>
+                    <p>${selectedStudent.name}, вы уже отметились сегодня.</p>
+                    <p style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
+                        Отметка действительна на сегодня
+                    </p>
+                </div>
+            `;
+            return;
+        }
+        
+        cardBody.innerHTML = `
+            <div class="current-time">
+                <div class="time-value" id="currentTimeValue">--:--:--</div>
+                <div class="date" id="currentDateValue">--</div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-row">
+                    <span class="info-label">📚 Группа:</span>
+                    <span class="info-value">${escapeHtml(groupName || 'Не указана')}</span>
+                </div>
+            </div>
+            
+            ${currentSubject ? `
+                <div class="subject-card">
+                    <div class="subject-name">📖 ${escapeHtml(currentSubject.name)}</div>
+                    <div class="subject-time">⏰ ${currentSubject.startTime} - ${currentSubject.endTime} (${currentSubject.lessonNumber}-й урок)</div>
+                    <div class="status-badge ${status.status === 'on_time' ? 'status-on-time' : (status.status === 'late' || status.status === 'very_late' ? 'status-late' : 'status-missed')}">
+                        ${status.text}
+                    </div>
+                </div>
+            ` : `
+                <div class="subject-card" style="background: #999;">
+                    <div class="subject-name">📖 Нет расписания</div>
+                    <div class="subject-time">В данный момент уроков нет</div>
+                </div>
+            `}
+            
+            <div class="student-select">
+                <label>👨‍🎓 Выберите студента:</label>
+                <input type="text" class="student-search" id="studentSearch" placeholder="Поиск по ФИО..." oninput="searchStudents()">
+                <div class="student-list" id="studentList">
+                    ${studentsList.map(student => `
+                        <div class="student-option ${selectedStudent?.id === student.id ? 'selected' : ''}" 
+                             data-id="${student.id}" 
+                             onclick="selectStudent('${student.id}')">
+                            👨‍🎓 ${escapeHtml(student.name)}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <button class="mark-btn" id="markBtn" onclick="markAttendance()" ${!selectedStudent ? 'disabled' : ''}>
+                ✅ Отметить посещаемость
+            </button>
+            
+            <div id="messageContainer"></div>
+        `;
+        
+        // Обновляем время
+        updateCurrentTime();
+    }
+
+    // Показать сообщение
+    function showMessage(text, type) {
+        const container = document.getElementById("messageContainer");
+        if (container) {
+            container.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => {
+                if (container.innerHTML.includes(text)) {
+                    container.innerHTML = '';
+                }
+            }, 3000);
+        }
+    }
+
+    // Эскейп HTML
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Запуск
+    init();
+</script>
+
+</body>
+</html>

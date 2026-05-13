@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.85">
+    <title>Предметы | Техникум</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1a1a2e;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Шапка */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        body.light .top-bar {
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        body.dark .top-bar {
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        body.light .logo {
+            color: #4CAF50;
+        }
+
+        body.dark .logo {
+            color: #ffd700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-btn, .theme-btn {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        body.light .back-btn {
+            background: #555;
+            color: white;
+        }
+
+        body.dark .back-btn {
+            background: #333;
+            color: #ffd700;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        body.light .theme-toggle {
+            background: #1a1a2e;
+            color: #ffd700;
+        }
+
+        body.dark .theme-toggle {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        /* Хедер */
+        .hero {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        body.light .hero h1 {
+            background: linear-gradient(135deg, #1a1a2e, #4CAF50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        body.dark .hero h1 {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .divider {
+            width: 80px;
+            height: 3px;
+            margin: 15px auto;
+            border-radius: 3px;
+        }
+
+        body.light .divider {
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+        }
+
+        body.dark .divider {
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
+        }
+
+        /* Основной контент */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 30px;
+        }
+
+        /* Кнопка добавления */
+        .add-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76,175,80,0.3);
+        }
+
+        body.dark .add-btn {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        body.dark .add-btn:hover {
+            background: #ffc107;
+        }
+
+        /* Список предметов */
+        .subjects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .subject-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        body.light .subject-card {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        body.dark .subject-card {
+            background: rgba(30,30,50,0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .subject-card:hover {
+            transform: translateX(5px);
+        }
+
+        body.light .subject-card:hover {
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        body.dark .subject-card:hover {
+            background: rgba(40,40,65,0.95);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.1);
+        }
+
+        .subject-info {
+            flex: 1;
+        }
+
+        .subject-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .subject-details {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            opacity: 0.7;
+            flex-wrap: wrap;
+        }
+
+        .subject-details span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .subject-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .edit-btn {
+            color: #2196F3;
+        }
+
+        .edit-btn:hover {
+            background: rgba(33,150,243,0.1);
+            transform: scale(1.1);
+        }
+
+        .delete-btn {
+            color: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            background: rgba(231,76,60,0.1);
+            transform: scale(1.1);
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.6;
+            font-size: 16px;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        body.dark .modal-content {
+            background: #1e1e2e;
+            color: white;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.dark .modal-header {
+            border-bottom-color: #444;
+        }
+
+        .modal-header h3 {
+            font-size: 22px;
+        }
+
+        .close-modal {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            font-size: 14px;
+            transition: 0.3s;
+            background: white;
+        }
+
+        body.dark .form-group input,
+        body.dark .form-group select,
+        body.dark .form-group textarea {
+            background: #2a2a3a;
+            border-color: #444;
+            color: white;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        body.dark .form-group input:focus {
+            border-color: #ffd700;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .save-btn {
+            flex: 1;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #45a049;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            background: #999;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .cancel-btn:hover {
+            background: #777;
+        }
+
+        /* Футер */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .subject-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .subject-actions {
+                align-self: flex-end;
+            }
+            
+            .subject-details {
+                gap: 12px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .top-bar {
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body class="light">
+
+<div class="container">
+    <div class="top-bar">
+        <div class="logo">🏫 Техникум Управления</div>
+        <div class="nav-buttons">
+            <button class="back-btn" onclick="goBack()">← Назад</button>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>📖 ПРЕДМЕТЫ</h1>
+        <div class="divider"></div>
+        <p>Управление дисциплинами и учебными курсами</p>
+    </div>
+
+    <div class="content">
+        <button class="add-btn" onclick="openAddSubjectModal()">
+            ➕ Добавить предмет
+        </button>
+
+        <div class="subjects-list" id="subjectsList">
+            <div class="empty-state">⏳ Загрузка предметов...</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Техникум Управления | Электронная система учета</p>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования предмета -->
+<div class="modal" id="subjectModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Добавить предмет</h3>
+            <button class="close-modal" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="subjectForm" onsubmit="saveSubject(event)">
+                <div class="form-group">
+                    <label>Название предмета *</label>
+                    <input type="text" id="subjectName" required placeholder="Например: Математика">
+                </div>
+                
+                <div class="form-group">
+                    <label>Код дисциплины</label>
+                    <input type="text" id="subjectCode" placeholder="Например: ОП.01">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Часов всего</label>
+                        <input type="number" id="totalHours" placeholder="Количество часов">
+                    </div>
+                    <div class="form-group">
+                        <label>Семестр</label>
+                        <select id="semester">
+                            <option value="1">1 семестр</option>
+                            <option value="2">2 семестр</option>
+                            <option value="3">3 семестр</option>
+                            <option value="4">4 семестр</option>
+                            <option value="5">5 семестр</option>
+                            <option value="6">6 семестр</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Преподаватель</label>
+                    <input type="text" id="teacher" placeholder="ФИО преподавателя">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Лекции (часов)</label>
+                        <input type="number" id="lectureHours" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Практика (часов)</label>
+                        <input type="number" id="practiceHours" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Лабораторные (часов)</label>
+                        <input type="number" id="labHours" placeholder="0" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Форма контроля</label>
+                    <select id="controlForm">
+                        <option value="экзамен">Экзамен</option>
+                        <option value="зачет">Зачет</option>
+                        <option value="диф.зачет">Дифференцированный зачет</option>
+                        <option value="курсовая">Курсовая работа</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="description" rows="3" placeholder="Краткое описание предмета"></textarea>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">💾 Сохранить</button>
+                    <button type="button" class="cancel-btn" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+        authDomain: "agroprombank-637a2.firebaseapp.com",
+        projectId: "agroprombank-637a2",
+        storageBucket: "agroprombank-637a2.firebasestorage.app",
+        messagingSenderId: "16228435746",
+        appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentSubjectId = null;
+    let subjects = [];
+
+    // Загрузка предметов
+    async function loadSubjects() {
+        const subjectsList = document.getElementById("subjectsList");
+        subjectsList.innerHTML = '<div class="empty-state">⏳ Загрузка предметов...</div>';
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, "subjects"));
+            subjects = [];
+            querySnapshot.forEach(doc => {
+                subjects.push({ id: doc.id, ...doc.data() });
+            });
+            
+            if (subjects.length === 0) {
+                subjectsList.innerHTML = '<div class="empty-state">📭 Нет предметов. Нажмите "Добавить предмет"</div>';
+                return;
+            }
+            
+            // Сортируем по названию
+            subjects.sort((a, b) => a.name?.localeCompare(b.name || '', 'ru') || 0);
+            
+            subjectsList.innerHTML = "";
+            
+            subjects.forEach(subject => {
+                const card = document.createElement("div");
+                card.className = "subject-card";
+                card.innerHTML = `
+                    <div class="subject-info">
+                        <div class="subject-name">📘 ${escapeHtml(subject.name || "Без названия")}</div>
+                        <div class="subject-details">
+                            <span>🆔 ${escapeHtml(subject.code || "без кода")}</span>
+                            <span>⏱️ ${subject.totalHours || 0} ч.</span>
+                            <span>📚 ${subject.semester || 1} семестр</span>
+                            <span>👨‍🏫 ${escapeHtml(subject.teacher || "не назначен")}</span>
+                            <span>📝 ${subject.controlForm || "экзамен"}</span>
+                        </div>
+                    </div>
+                    <div class="subject-actions">
+                        <button class="edit-btn" onclick="openEditSubject('${subject.id}')">✏️</button>
+                        <button class="delete-btn" onclick="deleteSubject('${subject.id}')">🗑️</button>
+                    </div>
+                `;
+                subjectsList.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки:", error);
+            subjectsList.innerHTML = '<div class="empty-state">❌ Ошибка загрузки предметов</div>';
+        }
+    }
+
+    // Открыть модалку добавления
+    window.openAddSubjectModal = function() {
+        currentSubjectId = null;
+        document.getElementById("modalTitle").innerText = "Добавить предмет";
+        document.getElementById("subjectForm").reset();
+        document.getElementById("totalHours").value = "";
+        document.getElementById("lectureHours").value = "0";
+        document.getElementById("practiceHours").value = "0";
+        document.getElementById("labHours").value = "0";
+        document.getElementById("subjectModal").style.display = "flex";
+    };
+
+    // Открыть модалку редактирования
+    window.openEditSubject = async function(subjectId) {
+        try {
+            const subjectRef = doc(db, "subjects", subjectId);
+            const subjectSnap = await getDocs(collection(db, "subjects"));
+            let subject = null;
+            subjectSnap.forEach(doc => {
+                if (doc.id === subjectId) {
+                    subject = { id: doc.id, ...doc.data() };
+                }
+            });
+            
+            if (subject) {
+                currentSubjectId = subjectId;
+                document.getElementById("modalTitle").innerText = "Редактировать предмет";
+                document.getElementById("subjectName").value = subject.name || "";
+                document.getElementById("subjectCode").value = subject.code || "";
+                document.getElementById("totalHours").value = subject.totalHours || "";
+                document.getElementById("semester").value = subject.semester || "1";
+                document.getElementById("teacher").value = subject.teacher || "";
+                document.getElementById("lectureHours").value = subject.lectureHours || "0";
+                document.getElementById("practiceHours").value = subject.practiceHours || "0";
+                document.getElementById("labHours").value = subject.labHours || "0";
+                document.getElementById("controlForm").value = subject.controlForm || "экзамен";
+                document.getElementById("description").value = subject.description || "";
+                document.getElementById("subjectModal").style.display = "flex";
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки предмета:", error);
+            alert("Ошибка при загрузке данных предмета");
+        }
+    };
+
+    // Сохранить предмет
+    window.saveSubject = async function(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById("subjectName").value.trim();
+        if (!name) {
+            alert("Введите название предмета");
+            return;
+        }
+        
+        const totalHours = parseInt(document.getElementById("totalHours").value) || 0;
+        const lectureHours = parseInt(document.getElementById("lectureHours").value) || 0;
+        const practiceHours = parseInt(document.getElementById("practiceHours").value) || 0;
+        const labHours = parseInt(document.getElementById("labHours").value) || 0;
+        
+        const subjectData = {
+            name: name,
+            code: document.getElementById("subjectCode").value.trim() || "",
+            totalHours: totalHours,
+            semester: document.getElementById("semester").value,
+            teacher: document.getElementById("teacher").value.trim() || "",
+            lectureHours: lectureHours,
+            practiceHours: practiceHours,
+            labHours: labHours,
+            controlForm: document.getElementById("controlForm").value,
+            description: document.getElementById("description").value.trim() || "",
+            updatedAt: new Date().toISOString()
+        };
+        
+        try {
+            if (currentSubjectId) {
+                // Обновление
+                await updateDoc(doc(db, "subjects", currentSubjectId), subjectData);
+            } else {
+                // Добавление
+                subjectData.createdAt = new Date().toISOString();
+                await addDoc(collection(db, "subjects"), subjectData);
+            }
+            closeModal();
+            await loadSubjects();
+        } catch (error) {
+            console.error("Ошибка сохранения:", error);
+            alert("Ошибка при сохранении предмета");
+        }
+    };
+
+    // Удалить предмет
+    window.deleteSubject = async function(subjectId) {
+        if (confirm("Удалить предмет? Это действие нельзя отменить.")) {
+            try {
+                await deleteDoc(doc(db, "subjects", subjectId));
+                await loadSubjects();
+            } catch (error) {
+                console.error("Ошибка удаления:", error);
+                alert("Ошибка при удалении предмета");
+            }
+        }
+    };
+
+    // Закрыть модалку
+    window.closeModal = function() {
+        document.getElementById("subjectModal").style.display = "none";
+        currentSubjectId = null;
+    };
+
+    // Закрытие по клику вне области
+    window.onclick = function(event) {
+        const modal = document.getElementById("subjectModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+            currentSubjectId = null;
+        }
+    };
+
+    // Навигация
+    window.goBack = function() {
+        window.location.href = "schedule.html";
+    };
+
+    // Тема
+    window.toggleTheme = function() {
+        const body = document.body;
+        body.classList.toggle("dark");
+        body.classList.toggle("light");
+        localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+    };
+
+    // Эскейп HTML
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Загрузка темы
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+        document.body.classList.remove("light");
+        document.body.classList.add("dark");
+    } else if (savedTheme === "light") {
+        document.body.classList.remove("dark");
+        document.body.classList.add("light");
+    }
+
+    // Инициализация
+    window.onload = function() {
+        loadSubjects();
+    };
+</script>
+
+</body>
+</html>

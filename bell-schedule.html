@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.85">
+    <title>Расписание звонков | Техникум</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1a1a2e;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Шапка */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        body.light .top-bar {
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        body.dark .top-bar {
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        body.light .logo {
+            color: #4CAF50;
+        }
+
+        body.dark .logo {
+            color: #ffd700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        body.light .back-btn {
+            background: #555;
+            color: white;
+        }
+
+        body.dark .back-btn {
+            background: #333;
+            color: #ffd700;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        body.light .theme-toggle {
+            background: #1a1a2e;
+            color: #ffd700;
+        }
+
+        body.dark .theme-toggle {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        /* Хедер */
+        .hero {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        body.light .hero h1 {
+            background: linear-gradient(135deg, #1a1a2e, #4CAF50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        body.dark .hero h1 {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .divider {
+            width: 80px;
+            height: 3px;
+            margin: 15px auto;
+            border-radius: 3px;
+        }
+
+        body.light .divider {
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+        }
+
+        body.dark .divider {
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
+        }
+
+        /* Основной контент */
+        .content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px 30px;
+        }
+
+        /* Вкладки */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid transparent;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 12px 12px 0 0;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        body.light .tab-btn {
+            color: #666;
+        }
+
+        body.dark .tab-btn {
+            color: #aaa;
+        }
+
+        .tab-btn.active {
+            font-weight: bold;
+        }
+
+        body.light .tab-btn.active {
+            color: #4CAF50;
+            border-bottom: 3px solid #4CAF50;
+        }
+
+        body.dark .tab-btn.active {
+            color: #ffd700;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Кнопка добавления */
+        .add-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76,175,80,0.3);
+        }
+
+        body.dark .add-btn {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        body.dark .add-btn:hover {
+            background: #ffc107;
+        }
+
+        /* Список звонков */
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bell-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        body.light .bell-card {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        body.dark .bell-card {
+            background: rgba(30,30,50,0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .bell-card:hover {
+            transform: translateX(5px);
+        }
+
+        .bell-info {
+            flex: 1;
+        }
+
+        .bell-number {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        body.light .bell-number {
+            color: #4CAF50;
+        }
+
+        body.dark .bell-number {
+            color: #ffd700;
+        }
+
+        .bell-times {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .bell-times span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bell-break {
+            margin-top: 6px;
+            font-size: 13px;
+            opacity: 0.7;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bell-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .edit-btn {
+            color: #2196F3;
+        }
+
+        .edit-btn:hover {
+            background: rgba(33,150,243,0.1);
+            transform: scale(1.1);
+        }
+
+        .delete-btn {
+            color: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            background: rgba(231,76,60,0.1);
+            transform: scale(1.1);
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.6;
+            font-size: 16px;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        body.dark .modal-content {
+            background: #1e1e2e;
+            color: white;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.dark .modal-header {
+            border-bottom-color: #444;
+        }
+
+        .modal-header h3 {
+            font-size: 22px;
+        }
+
+        .close-modal {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            font-size: 14px;
+            transition: 0.3s;
+            background: white;
+        }
+
+        body.dark .form-group input,
+        body.dark .form-group select {
+            background: #2a2a3a;
+            border-color: #444;
+            color: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        body.dark .form-group input:focus {
+            border-color: #ffd700;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .save-btn {
+            flex: 1;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #45a049;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            background: #999;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .cancel-btn:hover {
+            background: #777;
+        }
+
+        /* Инфо-блок */
+        .info-block {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        body.light .info-block {
+            background: rgba(255,255,255,0.7);
+        }
+
+        body.dark .info-block {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .info-block p {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        /* Футер */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .bell-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .bell-actions {
+                align-self: flex-end;
+            }
+            
+            .bell-times {
+                gap: 15px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .top-bar {
+                padding: 12px 20px;
+            }
+            
+            .tab-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body class="light">
+
+<div class="container">
+    <div class="top-bar">
+        <div class="logo">🏫 Техникум Управления</div>
+        <div class="nav-buttons">
+            <button class="back-btn" onclick="goBack()">← Назад</button>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>🔔 РАСПИСАНИЕ ЗВОНКОВ</h1>
+        <div class="divider"></div>
+        <p>Настройка времени уроков и перемен</p>
+    </div>
+
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('first')">📘 Первая смена</button>
+            <button class="tab-btn" onclick="switchTab('second')">📙 Вторая смена</button>
+        </div>
+
+        <button class="add-btn" onclick="openAddBellModal()">
+            ➕ Добавить урок
+        </button>
+
+        <div class="schedule-list" id="scheduleList">
+            <div class="empty-state">⏳ Загрузка расписания...</div>
+        </div>
+
+        <div class="info-block">
+            <p>ℹ️ Время указывается в формате ЧЧ:ММ (например, 08:30)<br>
+            Перемена указывается в минутах после окончания урока</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Техникум Управления | Электронная система учета</p>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования звонка -->
+<div class="modal" id="bellModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Добавить урок</h3>
+            <button class="close-modal" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="bellForm" onsubmit="saveBell(event)">
+                <div class="form-group">
+                    <label>Номер урока *</label>
+                    <input type="number" id="lessonNumber" required placeholder="1, 2, 3..." min="1">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Время начала</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Время окончания</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Длительность перемены (минут)</label>
+                    <input type="number" id="breakDuration" placeholder="10" value="10" min="0">
+                    <small style="font-size: 11px; opacity: 0.6;">Время после урока до следующего звонка</small>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">💾 Сохранить</button>
+                    <button type="button" class="cancel-btn" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+        authDomain: "agroprombank-637a2.firebaseapp.com",
+        projectId: "agroprombank-637a2",
+        storageBucket: "agroprombank-637a2.firebasestorage.app",
+        messagingSenderId: "16228435746",
+        appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentBellId = null;
+    let currentShift = 'first'; // 'first' или 'second'
+
+    // Загрузка расписания звонков
+    async function loadSchedule() {
+        const scheduleList = document.getElementById("scheduleList");
+        scheduleList.innerHTML = '<div class="empty-state">⏳ Загрузка расписания...</div>';
+        
+        try {
+            const q = query(collection(db, "bellSchedule"), where("shift", "==", currentShift));
+            const querySnapshot = await getDocs(q);
+            const bells = [];
+            querySnapshot.forEach(doc => {
+                bells.push({ id: doc.id, ...doc.data() });
+            });
+            
+            if (bells.length === 0) {
+                scheduleList.innerHTML = '<div class="empty-state">🔔 Нет уроков. Нажмите "Добавить урок"</div>';
+                return;
+            }
+            
+            // Сортируем по номеру урока
+            bells.sort((a, b) => a.lessonNumber - b.lessonNumber);
+            
+            scheduleList.innerHTML = "";
+            
+            bells.forEach(bell => {
+                const card = document.createElement("div");
+                card.className = "bell-card";
+                card.innerHTML = `
+                    <div class="bell-info">
+                        <div class="bell-number">📌 ${bell.lessonNumber}-й урок</div>
+                        <div class="bell-times">
+                            <span>⏰ ${bell.startTime || '--:--'} - ${bell.endTime || '--:--'}</span>
+                            <span>⏱️ Длительность: ${calculateDuration(bell.startTime, bell.endTime)} мин</span>
+                        </div>
+                        <div class="bell-break">
+                            🍴 Перемена: ${bell.breakDuration || 0} минут
+                        </div>
+                    </div>
+                    <div class="bell-actions">
+                        <button class="edit-btn" onclick="openEditBell('${bell.id}')">✏️</button>
+                        <button class="delete-btn" onclick="deleteBell('${bell.id}')">🗑️</button>
+                    </div>
+                `;
+                scheduleList.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки:", error);
+            scheduleList.innerHTML = '<div class="empty-state">❌ Ошибка загрузки расписания</div>';
+        }
+    }
+
+    // Расчет длительности урока
+    function calculateDuration(startTime, endTime) {
+        if (!startTime || !endTime) return '?';
+        const start = new Date(`2000-01-01T${startTime}`);
+        const end = new Date(`2000-01-01T${endTime}`);
+        const diff = (end - start) / 1000 / 60;
+        return diff > 0 ? diff : diff + 1440; // если переход через полночь
+    }
+
+    // Переключение смены
+    window.switchTab = function(shift) {
+        currentShift = shift;
+        
+        // Обновляем активную вкладку
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        if (shift === 'first') {
+            tabs[0].classList.add('active');
+        } else {
+            tabs[1].classList.add('active');
+        }
+        
+        loadSchedule();
+    };
+
+    // Открыть модалку добавления
+    window.openAddBellModal = function() {
+        currentBellId = null;
+        document.getElementById("modalTitle").innerText = "Добавить урок";
+        document.getElementById("bellForm").reset();
+        document.getElementById("lessonNumber").value = "";
+        document.getElementById("breakDuration").value = "10";
+        document.getElementById("bellModal").style.display = "flex";
+    };
+
+    // Открыть модалку редактирования
+    window.openEditBell = async function(bellId) {
+        try {
+            const bellRef = doc(db, "bellSchedule", bellId);
+            const bellSnap = await getDocs(collection(db, "bellSchedule"));
+            let bell = null;
+            bellSnap.forEach(doc => {
+                if (doc.id === bellId) {
+                    bell = { id: doc.id, ...doc.data() };
+                }
+            });
+            
+            if (bell) {
+                currentBellId = bellId;
+                document.getElementById("modalTitle").innerText = "Редактировать урок";
+                document.getElementById("lessonNumber").value = bell.lessonNumber || "";
+                document.getElementById("startTime").value = bell.startTime || "";
+                document.getElementById("endTime").value = bell.endTime || "";
+                document.getElementById("breakDuration").value = bell.breakDuration || "10";
+                document.getElementById("bellModal").style.display = "flex";
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки урока:", error);
+            alert("Ошибка при загрузке данных урока");
+        }
+    };
+
+    // Сохранить звонок
+    window.saveBell = async function(event) {
+        event.preventDefault();
+        
+        const lessonNumber = parseInt(document.getElementById("lessonNumber").value);
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+        const breakDuration = parseInt(document.getElementById("breakDuration").value) || 0;
+        
+        if (!lessonNumber) {
+            alert("Введите номер урока");
+            return;
+        }
+        
+        if (!startTime || !endTime) {
+            alert("Введите время начала и окончания урока");
+            return;
+        }
+        
+        const bellData = {
+            lessonNumber: lessonNumber,
+            startTime: startTime,
+            endTime: endTime,
+            breakDuration: breakDuration,
+            shift: currentShift,
+            updatedAt: new Date().toISOString()
+        };
+        
+        try {
+            if (currentBellId) {
+                // Обновление
+                await updateDoc(doc(db, "bellSchedule", currentBellId), bellData);
+            } else {
+                // Добавление
+                bellData.createdAt = new Date().toISOString();
+                await addDoc(collection(db, "bellSchedule"), bellData);
+            }
+            closeModal();
+            await loadSchedule();
+        } catch (error) {
+            console.error("Ошибка сохранения:", error);
+            alert("Ошибка при сохранении расписания");
+        }
+    };
+
+    // Удалить звонок
+    window.deleteBell = async function(bellId) {
+        if (confirm("Удалить урок из расписания?")) {
+            try {
+                await deleteDoc(doc(db, "bellSchedule", bellId));
+                await loadSchedule();
+            } catch (error) {
+                console.error("Ошибка удаления:", error);
+                alert("Ошибка при удалении урока");
+            }
+        }
+    };
+
+    // Закрыть модалку
+    window.closeModal = function() {
+        document.getElementById("bellModal").style.display = "none";
+        currentBellId = null;
+    };
+
+    // Закрытие по клику вне области
+    window.onclick = function(event) {
+        const modal = document.getElementById("bellModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+            currentBellId = null;
+        }
+    };
+
+    // Навигация
+    window.goBack = function() {
+        window.location.href = "schedule.html";
+    };
+
+    // Тема
+    window.toggleTheme = function() {
+        const body = document.body;
+        body.classList.toggle("dark");
+        body.classList.toggle("light");
+        localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+    };
+
+    // Загрузка темы
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+        document.body.classList.remove("light");
+        document.body.classList.add("dark");
+    } else if (savedTheme === "light") {
+        document.body.classList.remove("dark");
+        document.body.classList.add("light");
+    }
+
+    // Инициализация
+    window.onload = function() {
+        loadSchedule();
+    };
+</script>
+
+</body>
+</html>

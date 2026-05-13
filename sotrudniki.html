@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Сотрудники</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial;
+        transition: 0.3s;
+    }
+
+    /* ТЕМЫ */
+    body.light {
+        background: #f5f5f5;
+        color: #000;
+    }
+
+    body.dark {
+        background: #0f0f0f;
+        color: #fff;
+    }
+
+    .header {
+        text-align: center;
+        padding: 20px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    /* КНОПКИ ВЕРХА */
+    .top-btn {
+        position: absolute;
+        top: 10px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .back-btn {
+        left: 10px;
+        background: #555;
+        color: white;
+    }
+
+    .theme-btn {
+        right: 10px;
+    }
+
+    body.light .theme-btn {
+        background: #000;
+        color: #fff;
+    }
+
+    body.dark .theme-btn {
+        background: #ffd700;
+        color: #000;
+    }
+
+    /* СПИСОК */
+    .card {
+        background: rgba(0,0,0,0.05);
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    body.dark .card {
+        background: #1c1c1c;
+    }
+
+    /* ДОБАВИТЬ */
+    .add-btn {
+        margin-top: 15px;
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        background: #4CAF50;
+        color: white;
+    }
+
+    .add-btn:hover {
+        background: #45a049;
+    }
+
+    /* МОДАЛКА */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        width: 350px;
+    }
+
+    body.dark .modal-content {
+        background: #1f1f1f;
+        color: white;
+    }
+
+    input {
+        width: 100%;
+        margin-top: 8px;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .save {
+        flex: 1;
+        background: #2196F3;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 8px;
+    }
+
+    .cancel {
+        flex: 1;
+        background: #999;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 8px;
+    }
+
+</style>
+</head>
+
+<body class="light">
+
+<!-- КНОПКИ ВЕРХА -->
+<button class="top-btn back-btn" onclick="goBack()">← Назад</button>
+<button class="top-btn theme-btn" onclick="toggleTheme()">Тема</button>
+
+<div class="header">СОТРУДНИКИ</div>
+
+<div class="container">
+
+    <div id="list"></div>
+
+    <button class="add-btn" onclick="openModal()">+ Добавить сотрудника</button>
+
+</div>
+
+<!-- МОДАЛКА -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h3>Добавить сотрудника</h3>
+
+        <input id="surname" placeholder="Фамилия">
+        <input id="name" placeholder="Имя">
+        <input id="patronymic" placeholder="Отчество">
+        <input id="phone" placeholder="Телефон">
+
+        <div class="modal-buttons">
+            <button class="save" onclick="addEmployee()">Сохранить</button>
+            <button class="cancel" onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+  authDomain: "agroprombank-637a2.firebaseapp.com",
+  projectId: "agroprombank-637a2",
+  storageBucket: "agroprombank-637a2.firebasestorage.app",
+  messagingSenderId: "16228435746",
+  appId: "1:16228435746:web:d08e247e5fa9c7b418077b",
+  measurementId: "G-PC20WNQK9C"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let employees = [];
+
+/* ЗАГРУЗКА */
+async function loadEmployees() {
+    const querySnapshot = await getDocs(collection(db, "employees"));
+    employees = [];
+
+    querySnapshot.forEach((doc) => {
+        employees.push(doc.data());
+    });
+
+    render();
+}
+
+/* ОТОБРАЖЕНИЕ */
+function render() {
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+
+    employees.forEach((e) => {
+        list.innerHTML += `
+            <div class="card">
+                <div>
+                    <b>${e.surname} ${e.name} ${e.patronymic}</b><br>
+                    📞 ${e.phone}
+                </div>
+            </div>
+        `;
+    });
+}
+
+/* ДОБАВИТЬ */
+window.addEmployee = async function () {
+    let emp = {
+        surname: document.getElementById("surname").value,
+        name: document.getElementById("name").value,
+        patronymic: document.getElementById("patronymic").value,
+        phone: document.getElementById("phone").value
+    };
+
+    if (!emp.surname || !emp.name || !emp.phone) return;
+
+    await addDoc(collection(db, "employees"), emp);
+
+    closeModal();
+    loadEmployees();
+}
+
+/* МОДАЛКА */
+window.openModal = function () {
+    document.getElementById("modal").style.display = "flex";
+}
+
+window.closeModal = function () {
+    document.getElementById("modal").style.display = "none";
+}
+
+/* НАЗАД */
+window.goBack = function () {
+    window.location.href = "panel.html";
+}
+
+/* ТЕМА */
+window.toggleTheme = function () {
+    let current = localStorage.getItem("theme") || "light";
+    let newTheme = current === "light" ? "dark" : "light";
+
+    document.body.className = newTheme;
+    localStorage.setItem("theme", newTheme);
+}
+
+/* СТАРТ */
+let saved = localStorage.getItem("theme") || "light";
+document.body.className = saved;
+
+loadEmployees();
+
+</script>
+
+</body>
+</html>

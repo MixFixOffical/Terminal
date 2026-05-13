@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Студенты</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body.light { background:#f5f5f5; color:#000; }
+body.dark { background:#0f0f0f; color:#fff; }
+
+.top-bar {
+    position:sticky;
+    top:0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    background:inherit;
+    border-bottom:1px solid #ddd;
+    z-index:100;
+}
+
+body.dark .top-bar {
+    border-bottom-color:#333;
+}
+
+.back-btn, .theme-btn {
+    padding:8px 16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.back-btn { background:#555; color:#fff; }
+.theme-btn { background:#4CAF50; color:#fff; }
+
+.header {
+    text-align:center;
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+}
+
+.container {
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.add-btn {
+    background:#4CAF50;
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.add-btn:hover {
+    background:#45a049;
+}
+
+.students-list {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.student-card {
+    background:#e0e0e0;
+    padding:15px 20px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.2s;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+body.dark .student-card {
+    background:#1e1e1e;
+}
+
+.student-card:hover {
+    transform:scale(1.01);
+    background:#ccc;
+}
+
+body.dark .student-card:hover {
+    background:#2a2a2a;
+}
+
+.student-name {
+    font-size:18px;
+    font-weight:bold;
+}
+
+.student-group {
+    font-size:14px;
+    opacity:0.8;
+    margin-top:5px;
+}
+
+.student-phone {
+    font-size:14px;
+    color:#4CAF50;
+}
+
+.empty-state {
+    text-align:center;
+    padding:60px;
+    opacity:0.6;
+    font-size:18px;
+}
+
+.modal {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.modal-content {
+    background:white;
+    border-radius:16px;
+    width:90%;
+    max-width:550px;
+    max-height:85vh;
+    overflow-y:auto;
+    padding:25px;
+}
+
+body.dark .modal-content {
+    background:#1f1f1f;
+    color:white;
+}
+
+.modal-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    padding-bottom:10px;
+    border-bottom:2px solid #4CAF50;
+}
+
+.modal-header h3 {
+    font-size:22px;
+}
+
+.close-modal {
+    background:#e74c3c;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.form-row {
+    margin-bottom:18px;
+}
+
+.form-row label {
+    display:block;
+    margin-bottom:6px;
+    font-weight:500;
+    font-size:14px;
+}
+
+.form-row input, .form-row select {
+    width:100%;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:14px;
+    background:white;
+}
+
+body.dark .form-row input,
+body.dark .form-row select {
+    background:#2a2a2a;
+    border-color:#555;
+    color:white;
+}
+
+.group-select-row {
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+.group-select-row select {
+    flex:1;
+}
+
+.group-select-row button {
+    padding:10px 15px;
+    background:#2196F3;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+.form-buttons {
+    display:flex;
+    gap:12px;
+    margin-top:25px;
+}
+
+.save-btn {
+    flex:1;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.delete-btn {
+    flex:1;
+    background:#e74c3c;
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.cancel-btn {
+    flex:1;
+    background:#999;
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.help-text {
+    font-size:12px;
+    color:#999;
+    margin-top:5px;
+}
+
+body.dark .help-text {
+    color:#aaa;
+}
+</style>
+</head>
+
+<body class="light">
+
+<div class="top-bar">
+    <button class="back-btn" onclick="goBack()">← Назад</button>
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Тема</button>
+</div>
+
+<div class="header">👨‍🎓 Студенты</div>
+
+<div class="container">
+    <button class="add-btn" onclick="openAddStudentModal()">
+        ➕ Добавить студента
+    </button>
+    
+    <div class="students-list" id="studentsList"></div>
+</div>
+
+<!-- МОДАЛКА СТУДЕНТА -->
+<div class="modal" id="studentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Добавить студента</h3>
+            <button class="close-modal" onclick="closeStudentModal()">✕</button>
+        </div>
+        
+        <form id="studentForm" onsubmit="saveStudent(event)">
+            <div class="form-row">
+                <label>Фамилия *</label>
+                <input type="text" id="lastName" required placeholder="Иванов">
+            </div>
+            
+            <div class="form-row">
+                <label>Имя *</label>
+                <input type="text" id="firstName" required placeholder="Иван">
+            </div>
+            
+            <div class="form-row">
+                <label>Отчество</label>
+                <input type="text" id="middleName" placeholder="Иванович">
+            </div>
+            
+            <div class="form-row">
+                <label>Номер телефона</label>
+                <input type="tel" id="phone" placeholder="+7 (999) 123-45-67">
+            </div>
+            
+            <div class="form-row">
+                <label>Дата рождения</label>
+                <input type="date" id="birthDate">
+            </div>
+            
+            <div class="form-row">
+                <label>Группа</label>
+                <div class="group-select-row">
+                    <select id="groupId">
+                        <option value="">-- Выберите группу --</option>
+                    </select>
+                    <button type="button" onclick="openAddGroupModal()">+</button>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <label>Логин (Email)</label>
+                <input type="email" id="login" placeholder="login@ttiip.ru">
+                <div class="help-text">Формат: логин@ttiip.ru</div>
+            </div>
+            
+            <div class="form-row">
+                <label>Пароль</label>
+                <input type="text" id="password" placeholder="password">
+                <div class="help-text">Для новых студентов генерируется автоматически</div>
+            </div>
+            
+            <div class="form-buttons">
+                <button type="submit" class="save-btn">💾 Сохранить</button>
+                <button type="button" class="delete-btn" id="deleteBtn" style="display:none;" onclick="deleteStudent()">🗑 Удалить</button>
+                <button type="button" class="cancel-btn" onclick="closeStudentModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- МОДАЛКА ГРУППЫ -->
+<div class="modal" id="addGroupModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Создать группу</h3>
+            <button class="close-modal" onclick="closeAddGroupModal()">✕</button>
+        </div>
+        
+        <div class="form-row">
+            <label>Название группы *</label>
+            <input type="text" id="newGroupName" placeholder="Например: БД-111">
+        </div>
+        
+        <div class="form-row">
+            <label>Куратор</label>
+            <input type="text" id="newGroupCurator" placeholder="ФИО куратора">
+        </div>
+        
+        <div class="form-buttons">
+            <button class="save-btn" onclick="createNewGroup()">Создать</button>
+            <button class="cancel-btn" onclick="closeAddGroupModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// Конфигурация Firebase (та же, что и в календаре)
+const firebaseConfig = {
+  apiKey: "AIzaSyCuUnmOmVcDzkRPH4Y7xcmkx1If8NHwIQE",
+  authDomain: "agroprombank-637a2.firebaseapp.com",
+  projectId: "agroprombank-637a2",
+  storageBucket: "agroprombank-637a2.firebasestorage.app",
+  messagingSenderId: "16228435746",
+  appId: "1:16228435746:web:d08e247e5fa9c7b418077b"
+};
+
+// Инициализация
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Глобальные переменные
+let currentStudentId = null;
+let groupsList = [];
+
+// ========== ЗАГРУЗКА СПИСКА ГРУПП ==========
+async function loadGroups() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "groups"));
+        groupsList = [];
+        querySnapshot.forEach(doc => {
+            groupsList.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Обновляем select в форме
+        const groupSelect = document.getElementById("groupId");
+        if (groupSelect) {
+            const currentValue = groupSelect.value;
+            groupSelect.innerHTML = '<option value="">-- Выберите группу --</option>';
+            groupsList.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+            groupsList.forEach(group => {
+                const option = document.createElement("option");
+                option.value = group.id;
+                option.textContent = `${group.name || "Без названия"} ${group.curator ? "(куратор: " + group.curator + ")" : ""}`;
+                groupSelect.appendChild(option);
+            });
+            if (currentValue && groupsList.find(g => g.id === currentValue)) {
+                groupSelect.value = currentValue;
+            }
+        }
+        
+        return groupsList;
+    } catch (error) {
+        console.error("Ошибка загрузки групп:", error);
+        return [];
+    }
+}
+
+// ========== ЗАГРУЗКА СПИСКА СТУДЕНТОВ ==========
+async function loadStudents() {
+    const studentsListDiv = document.getElementById("studentsList");
+    studentsListDiv.innerHTML = '<div class="empty-state">⏳ Загрузка студентов...</div>';
+    
+    try {
+        // Получаем всех студентов
+        const studentsRef = collection(db, "students");
+        const querySnapshot = await getDocs(studentsRef);
+        
+        const students = [];
+        querySnapshot.forEach(doc => {
+            students.push({ id: doc.id, ...doc.data() });
+        });
+        
+        if (students.length === 0) {
+            studentsListDiv.innerHTML = '<div class="empty-state">📭 Нет студентов. Нажмите "Добавить студента"</div>';
+            return;
+        }
+        
+        // Сортируем по фамилии и имени
+        students.sort((a, b) => {
+            const nameA = `${a.lastName || ''} ${a.firstName || ''}`;
+            const nameB = `${b.lastName || ''} ${b.firstName || ''}`;
+            return nameA.localeCompare(nameB, 'ru');
+        });
+        
+        studentsListDiv.innerHTML = "";
+        
+        // Загружаем информацию о группах для каждого студента
+        for (const student of students) {
+            let groupName = "Не зачислен";
+            if (student.groupId) {
+                try {
+                    const groupRef = doc(db, "groups", student.groupId);
+                    const groupSnap = await getDoc(groupRef);
+                    if (groupSnap.exists()) {
+                        groupName = groupSnap.data().name || "Группа";
+                    }
+                } catch (err) {
+                    console.error("Ошибка загрузки группы:", err);
+                }
+            }
+            
+            const fullName = `${student.lastName || ''} ${student.firstName || ''} ${student.middleName || ''}`.trim();
+            
+            const card = document.createElement("div");
+            card.className = "student-card";
+            card.innerHTML = `
+                <div>
+                    <div class="student-name">👨‍🎓 ${escapeHtml(fullName || "Без имени")}</div>
+                    <div class="student-group">📚 Группа: ${escapeHtml(groupName)}</div>
+                </div>
+                <div class="student-phone">📞 ${escapeHtml(student.phone || "не указан")}</div>
+            `;
+            card.onclick = () => openEditStudentModal(student.id);
+            studentsListDiv.appendChild(card);
+        }
+    } catch (error) {
+        console.error("Ошибка загрузки студентов:", error);
+        studentsListDiv.innerHTML = `<div class="empty-state">❌ Ошибка загрузки: ${error.message}</div>`;
+    }
+}
+
+// ========== ОТКРЫТЬ МОДАЛКУ ДОБАВЛЕНИЯ ==========
+window.openAddStudentModal = async function() {
+    currentStudentId = null;
+    document.getElementById("modalTitle").innerText = "Добавить студента";
+    document.getElementById("deleteBtn").style.display = "none";
+    
+    // Очищаем форму
+    document.getElementById("lastName").value = "";
+    document.getElementById("firstName").value = "";
+    document.getElementById("middleName").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("birthDate").value = "";
+    document.getElementById("groupId").value = "";
+    document.getElementById("login").value = "";
+    
+    // Генерируем случайный пароль
+    const randomPassword = Math.random().toString(36).slice(-8);
+    document.getElementById("password").value = randomPassword;
+    
+    // Обновляем список групп перед открытием
+    await loadGroups();
+    
+    document.getElementById("studentModal").style.display = "flex";
+};
+
+// ========== ОТКРЫТЬ МОДАЛКУ РЕДАКТИРОВАНИЯ ==========
+window.openEditStudentModal = async function(studentId) {
+    currentStudentId = studentId;
+    document.getElementById("modalTitle").innerText = "Редактировать студента";
+    document.getElementById("deleteBtn").style.display = "block";
+    
+    try {
+        const studentRef = doc(db, "students", studentId);
+        const studentSnap = await getDoc(studentRef);
+        
+        if (studentSnap.exists()) {
+            const student = studentSnap.data();
+            document.getElementById("lastName").value = student.lastName || "";
+            document.getElementById("firstName").value = student.firstName || "";
+            document.getElementById("middleName").value = student.middleName || "";
+            document.getElementById("phone").value = student.phone || "";
+            document.getElementById("birthDate").value = student.birthDate || "";
+            document.getElementById("groupId").value = student.groupId || "";
+            document.getElementById("login").value = student.login || "";
+            document.getElementById("password").value = student.password || "";
+        }
+        
+        await loadGroups(); // Обновляем список групп
+        
+        document.getElementById("studentModal").style.display = "flex";
+    } catch (error) {
+        console.error("Ошибка загрузки студента:", error);
+        alert("Ошибка при загрузке данных студента: " + error.message);
+    }
+};
+
+// ========== СОХРАНИТЬ СТУДЕНТА ==========
+window.saveStudent = async function(event) {
+    event.preventDefault();
+    
+    const lastName = document.getElementById("lastName").value.trim();
+    const firstName = document.getElementById("firstName").value.trim();
+    const middleName = document.getElementById("middleName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const birthDate = document.getElementById("birthDate").value;
+    const groupId = document.getElementById("groupId").value;
+    let login = document.getElementById("login").value.trim();
+    let password = document.getElementById("password").value.trim();
+    
+    if (!lastName || !firstName) {
+        alert("Заполните фамилию и имя");
+        return;
+    }
+    
+    // Генерация логина если пусто
+    if (!login) {
+        // Простая транслитерация
+        const translit = (str) => {
+            const ru = {
+                'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z',
+                'и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r',
+                'с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'shch',
+                'ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'
+            };
+            return str.toLowerCase().split('').map(c => ru[c] || c).join('');
+        };
+        const latinLastName = translit(lastName);
+        const latinFirstName = translit(firstName);
+        login = `${latinLastName}.${latinFirstName}@ttiip.ru`;
+        document.getElementById("login").value = login;
+    } else if (!login.includes('@')) {
+        login = `${login}@ttiip.ru`;
+        document.getElementById("login").value = login;
+    }
+    
+    // Генерация пароля если пусто
+    if (!password) {
+        password = Math.random().toString(36).slice(-8);
+        document.getElementById("password").value = password;
+    }
+    
+    const studentData = {
+        lastName,
+        firstName,
+        middleName: middleName || "",
+        phone: phone || "",
+        birthDate: birthDate || "",
+        groupId: groupId || "",
+        login: login,
+        password: password,
+        updatedAt: new Date().toISOString()
+    };
+    
+    if (!currentStudentId) {
+        studentData.createdAt = new Date().toISOString();
+        currentStudentId = `student_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    }
+    
+    try {
+        await setDoc(doc(db, "students", currentStudentId), studentData);
+        closeStudentModal();
+        await loadStudents();
+        alert("Студент сохранен успешно!");
+    } catch (error) {
+        console.error("Ошибка сохранения:", error);
+        alert("Ошибка при сохранении: " + error.message);
+    }
+};
+
+// ========== УДАЛИТЬ СТУДЕНТА ==========
+window.deleteStudent = async function() {
+    if (!currentStudentId) return;
+    
+    if (confirm("Удалить студента? Это действие нельзя отменить.")) {
+        try {
+            await deleteDoc(doc(db, "students", currentStudentId));
+            closeStudentModal();
+            await loadStudents();
+            alert("Студент удален");
+        } catch (error) {
+            console.error("Ошибка удаления:", error);
+            alert("Ошибка при удалении: " + error.message);
+        }
+    }
+};
+
+// ========== РАБОТА С ГРУППАМИ ==========
+window.openAddGroupModal = function() {
+    document.getElementById("addGroupModal").style.display = "flex";
+    document.getElementById("newGroupName").value = "";
+    document.getElementById("newGroupCurator").value = "";
+};
+
+window.closeAddGroupModal = function() {
+    document.getElementById("addGroupModal").style.display = "none";
+};
+
+window.createNewGroup = async function() {
+    const name = document.getElementById("newGroupName").value.trim();
+    const curator = document.getElementById("newGroupCurator").value.trim();
+    
+    if (!name) {
+        alert("Введите название группы");
+        return;
+    }
+    
+    try {
+        const groupId = `group_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+        await setDoc(doc(db, "groups", groupId), {
+            name: name,
+            curator: curator || "",
+            createdAt: new Date().toISOString()
+        });
+        
+        closeAddGroupModal();
+        await loadGroups();
+        alert("Группа создана!");
+    } catch (error) {
+        console.error("Ошибка создания группы:", error);
+        alert("Ошибка при создании группы: " + error.message);
+    }
+};
+
+// ========== ЗАКРЫТЬ МОДАЛКИ ==========
+window.closeStudentModal = function() {
+    document.getElementById("studentModal").style.display = "none";
+    currentStudentId = null;
+};
+
+// Закрытие модалок при клике вне области
+window.onclick = function(event) {
+    const studentModal = document.getElementById("studentModal");
+    const groupModal = document.getElementById("addGroupModal");
+    
+    if (event.target === studentModal) {
+        studentModal.style.display = "none";
+        currentStudentId = null;
+    }
+    if (event.target === groupModal) {
+        groupModal.style.display = "none";
+    }
+};
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+window.goBack = function() {
+    window.location.href = "panel.html";
+};
+
+window.toggleTheme = function() {
+    const body = document.body;
+    body.classList.toggle("dark");
+    body.classList.toggle("light");
+    localStorage.setItem("theme", body.className);
+};
+
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
+window.onload = async function() {
+    document.body.className = localStorage.getItem("theme") || "light";
+    
+    try {
+        // Проверяем подключение к Firebase
+        console.log("Загрузка данных...");
+        await loadGroups();
+        await loadStudents();
+    } catch (error) {
+        console.error("Ошибка инициализации:", error);
+        document.getElementById("studentsList").innerHTML = 
+            '<div class="empty-state">❌ Ошибка подключения к базе данных. Проверьте интернет и правила Firestore.</div>';
+    }
+};
+</script>
+
+</body>
+</html>
